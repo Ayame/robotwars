@@ -10,6 +10,7 @@ $green: #0EE531;
 $red: #F9001E;
 $bordeaux: #BC0625;
 $blue: #22A4E7;
+$orange: #FF8D00;
 
 .cf:before, .cf:after {
   content: "";
@@ -31,6 +32,8 @@ $blue: #22A4E7;
 .center {
   text-align: center;
 }
+
+
 
 /**********************/
 /*  GENERAL ELEMENTS  */
@@ -95,7 +98,7 @@ aside {
   position: relative;
   padding: 5px 23px 5px 23px;
   line-height: 86px;
-  margin-bottom: 40px;
+  margin-bottom: 50px;
   h2 {
     position: absolute;
     top: -20px;
@@ -122,8 +125,7 @@ main {
   display: flex;
   flex-direction: row;
   #player1, #player2 {
-
-    flex-grow: 1;
+    width: 200px;
     align-self: flex-end;
     text-align: center;
 
@@ -154,10 +156,11 @@ main {
     }
   }
 
+
   .healthbar {
     position: relative;
+    margin-bottom: 10%;
     .wrapper {
-      width: 95%;
       @include blockcenter();
       border: 2px solid $green;
       border-radius: 13px;
@@ -191,4 +194,32 @@ main {
     background-color: $bordeaux;
   }
 
+  .critical {
+    color: $orange;
+    visibility: hidden;
+    animation-duration: 0.5s;
+    animation-name: criticalcolours;
+    animation-iteration-count: infinite;
+    strong{
+      display: block;
+    }
+
+  }
+
+}
+
+/*************************/
+/*       ANIMATIONS      */
+/*************************/
+
+main .healthbar {
+
+}
+
+@keyframes criticalcolours {
+  0% {color: #FBF200;}
+  30% {color: #FF8D00;}
+  50% {color: #F9001E;}
+  90% {color: #FF8D00;}
+  100% {color: #FBF200;}
 }
