@@ -1,0 +1,48 @@
+@import "mixins";
+
+@include font-face(deathstar, "../fonts/DeathStar");
+@include font-face(flottflott, "../fonts/flottflott");
+
+$basicfont: deathstar, "Helvetica Neue", Helvetica, Arial, sans-serif;
+$creativefont: flottflott, Times, serif;
+
+$green: #0EE531;
+$red: #F9001E;
+$bordeaux: #BC0625;
+$blue: #22A4E7;
+
+
+
+
+
+
+.cf:before, .cf:after {
+  content:"";
+  display: table;
+}
+
+.cf:after {
+  clear: both;
+}
+
+.nomargin {
+  margin: 0 !important;
+}
+.right {
+  text-align: right;
+}
+.center {
+  text-align: center;
+}
+.slides li {
+  cursor: pointer;
+}
+
+
+body {
+  font-size: 1.2rem;
+  font-family: $basicfont;
+  background-color: #000;
+  color: #FFF;
+  padding-bottom: 65px;
+}
