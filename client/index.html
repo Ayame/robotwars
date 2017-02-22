@@ -8,13 +8,53 @@
 </head>
 <body>
 
+<div id="container">
 <h1>Robot Wars</h1>
+    <!- bullet belt -->
+    <aside>
+        <h2>Bullet belt</h2>
+            <img src="images/item.svg" alt="item" title="Item" />
+        <img src="images/item.svg" alt="item" title="Item" />
+        <img src="images/item-selected.svg" alt="item" title="Item" />
+        <img src="images/item.svg" alt="item" title="Item" />
+        <img src="images/item.svg" alt="item" title="Item" />
+        <img src="images/item.svg" alt="item" title="Item" />
+        <img src="images/item.svg" alt="item" title="Item" />
+    </aside>
+
+<main class="cf">
+
+
+    <div id="player1">
+        <figure>
+            <img src="images/player1/robot-1.svg" alt="The wizz Kid"  title="The wizz Kid" />
+            <figcaption>Whizz Kid</figcaption>
+        </figure>
+        <div class="healthbar">
+            <div class="wrapper"><div class="visible-bar tempwidth"></div></div>
+            <h3><span>60</span>%</h3>
+        </div>
+    </div>
+    <div id="vs"><h2>VS</h2></div>
+    <div id="player2">
+        <figure>
+            <img src="images/player2/robot-2.svg" alt="The enforcer"  title="The enforcer" />
+            <figcaption>The Enforcer</figcaption>
+        </figure>
+        <div class="healthbar">
+            <div class="wrapper"><div class="visible-bar"></div></div>
+            <h3><span>100</span>%</h3>
+        </div>
+    </div>
+
+</main>
+</div>
 
 <script
         src="https://code.jquery.com/jquery-3.1.1.min.js"
         integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
         crossorigin="anonymous"></script>
-<script type="text/javascript" src="script.js"></script>
+<script type="text/javascript" src="assets/js/script.js"></script>
 
 </body>
 </html>
