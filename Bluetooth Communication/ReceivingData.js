@@ -9,13 +9,20 @@ var myPort = new serialport(portname, {
 
 myPort.on('open', onOpen);
 myPort.on('data', onrecieveData);
+myPort.on('error', showError)
 
 function onOpen()
 {
 	console.log("open connection");
 }
 
-function onrecieveData()
+function onrecieveData(data)
 {
 	console.log("Received data: " + data);
+}
+
+
+function showError(error) 
+{
+   console.log('Serial port error: ' + error);
 }
