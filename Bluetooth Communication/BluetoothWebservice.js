@@ -74,39 +74,57 @@ function showError(error)
 //use of the xbox gamepad instead of web cliënt controller
 xbox.on('a', function () {
   console.log('[A] button press');
+  sendData("FIRE");
 });
 
 xbox.on('x', function () {
   console.log('[X] button press');
+  sendData("GETAMMO");
 });
   
 xbox.on('start', function () {
   console.log('[Start] button press');
+  sendData("LOGIN");
 });
- 
  
 //Manage sticks events 
  
 xbox.on('leftstickLeft', function () {
   console.log('Moving [LEFTSTICK] LEFT');
+  sendData("left");
 });
  
 xbox.on('leftstickLeft:release', function () {
   console.log('Released [LEFTSTICK] LEFT');
+  sendData("stopMotor");
 });
  
 xbox.on('leftstickRight', function () {
   console.log('Moving [LEFTSTICK] RIGHT');
+  sendData("right");
 });
  
 xbox.on('leftstickRight:release', function () {
   console.log('Released [LEFTSTICK] RIGHT');
+  sendData("stopMotor");
 })
  
 xbox.on('leftstickDown', function () {
   console.log('Moving [LEFTSTICK] DOWN');
+  sendData("backwards");
 });
  
 xbox.on('leftstickUp', function () {
   console.log('Moving [LEFTSTICK] UP');
+  sendData("forward");
+});
+
+xbox.on('leftstickUp:release', function () {
+  console.log('Moving [LEFTSTICK] UP');
+  sendData("stopMotor");
+});
+
+xbox.on('leftstickDown:release', function () {
+  console.log('Moving [LEFTSTICK] UP');
+  sendData("stopMotor");
 });
