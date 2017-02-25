@@ -5,12 +5,46 @@
 var criticalHealthAudio = new Audio('assets/media/music/low-health.mp3');
 var isPlaying = false;
 
+
+function Box(id){
+    this.src = 'images/item.svg';
+    this.selected = false;
+    this.id = id;
+
+    this.addToHTML();
+}
+
+Box.prototype.animate = function(){
+   // $('#item-' + this.id).addClass('animateImg');
+    this.$htmlelement.addClass('animateImg');
+    return this;
+};
+
+Box.prototype.addToHTML = function(){
+    $('aside .wrapper').append('<img src="'+ this.src +'" alt="Collectible" title="Collectible" id="item-'+ this.id +'" />');
+    this.$htmlelement = $('#item-' + this.id);
+    return this;
+};
+
+Box.prototype.moveToStartPosition = function(){console.log(this);
+   // this.$htmlelement.css('right','-95px').removeClass('animateImg').addClass('animateImg'); // This makes them turn around and go back, really cool and unexpected!
+    this.$htmlelement.removeClass('animateImg');
+    void this.$htmlelement[0].offsetWidth; // Some magic I found on https://css-tricks.com/restart-css-animation/
+    this.$htmlelement.addClass('animateImg');
+    console.log('animation ended with position ' + this.$htmlelement.css('right'))
+
+    return this;
+};
+
 var config = {
     // Droids have 20 health points, we should receive this from the server ideally
     droidHealth: 20,
 
     // When only 5 lives are left, critical mode is enforced
-    criticalHealth: 5
+    criticalHealth: 5,
+
+    // Amount of boxes to be generated in the bullet belt
+    amountOfBoxes : 13
 };
 
 
@@ -19,12 +53,46 @@ var interfaceModule = (function () {
     // Precentage health not to have rounding issues
     var health = {player1: 100, player2: 100};
 
+    // Boxes collection
+    var boxes = [];
 
     var init = function () {
         fillOutHealth($('#player1 .healthbar h3 span'),health.player1);
         fillOutHealth($('#player2 .healthbar h3 span'),health.player2);
         bindEvents();
+        generateBoxes();
     };
+
+    var generateBoxes = function(){
+        for(var i= 0; i<config.amountOfBoxes; i++){
+            boxes.push(new Box(i));
+        }
+
+        // Probleem dat hij het terugzetten telkens op hetzelfde element doet?
+        var index = 0;
+        var movingBoxAnimation = setInterval(function(){
+            boxes[index].animate();
+
+            // Bind animation ended -> move to start position
+            boxes[index].$htmlelement.on('transitionend',function(escapedIndex){
+                return function(){
+                   boxes[escapedIndex].moveToStartPosition.call(boxes[escapedIndex])
+                }
+            }(index)); // Escape the closure my sweeties!
+
+            if(index<config.amountOfBoxes - 1){
+                index++;
+            } else {
+                clearInterval(movingBoxAnimation);
+            }
+
+        },760);
+
+    };
+
+
+
+
     var fillOutHealth = function ($target,newhealth) {
         $target.text(newhealth);
     };
@@ -68,6 +136,10 @@ var interfaceModule = (function () {
             // Trigger "died" event here
 
         }
+    };
+
+    var animateBox = function(){
+
     };
 
     return {

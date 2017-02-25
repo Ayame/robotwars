@@ -96,9 +96,13 @@ aside {
   border-radius: 12px;
   min-height: 86px;
   position: relative;
-  padding: 5px 23px 5px 23px;
-  line-height: 86px;
   margin-bottom: 50px;
+  .wrapper {
+    overflow: hidden;
+    position: relative;
+    min-height: 86px;
+    padding: 5px 23px 5px 23px;
+  }
   h2 {
     position: absolute;
     top: -20px;
@@ -111,9 +115,10 @@ aside {
   img {
     width: 60px;
     margin-right: 35px;
+    margin-top: 10px;
     display: inline-block;
-    vertical-align: middle;
-
+    position: absolute;
+    right: -95px;
   }
 }
 
@@ -222,4 +227,9 @@ main .healthbar {
   50% {color: #F9001E;}
   90% {color: #FF8D00;}
   100% {color: #FBF200;}
+}
+
+aside .animateImg {
+  right: 960px;
+  transition: right 10s linear;
 }
