@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Robot Wars</title>
+    <link type="text/css" rel="stylesheet" href="assets/css/reset.css"/>
+    <link type="text/css" rel="stylesheet" href="assets/css/screen.css"/>
+    <script  type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.8/p5.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.8/addons/p5.dom.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script type="text/javascript" src="assets/js/script.js"></script>
+	
+</head>
+<body>
+
+<div id="container">
+    <h1>Robot Wars</h1>
+    
+    <main class="cf">
+        <div id="player1">
+            <figure>
+                <img src="images/player1/robot-1.svg" />
+            </figure>
+        </div>
+        <div id="player2">
+            <figure>
+                <img src="images/controller.jpg"/ usemap="#controllermap">                
+            </figure>
+    </main>
+</div>
+<map name="controllermap">
+  <area shape="rect" coords="35,35,65,55" id="UP" alt="UP">
+  <area shape="rect" coords="40,85,65,105" id="DOWN" alt="DOWN">
+  <area shape="rect" coords="15,60,45,80" id="LEFT" alt="LEFT">
+  <area shape="rect" coords="60,60,90,80" id="RIGHT" alt="RIGHT">
+  <area shape="circle" coords="300,90,15" id="A" alt="FIRE">
+  <area shape="circle" coords="250,90,15" id="B" alt="GETAMMO">
+  <area shape="circle" coords="140,90,10" id="select" alt="stopMotor">
+  <area shape="circle" coords="190,90,10" id="start" alt="LOGIN">
+  </map>
+
+<footer>
+    Droids royalty free on <a href="http://all-silhouettes.com/" target="_blank">all-silhouettes.com/</a>
+</footer>
+
+</body>
+</html>
