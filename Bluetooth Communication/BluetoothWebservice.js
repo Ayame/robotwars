@@ -1,6 +1,7 @@
 var serialport = require('serialport');
 //var readline = require('readline');
 var WebSocketServer = require('ws').Server;
+var xbox = require('xbox-controller-node');
 
 var portname = process.argv[2];
 
@@ -68,3 +69,44 @@ function showError(error)
 {
    console.log('Serial port error: ' + error);
 }
+
+
+//use of the xbox gamepad instead of web cliënt controller
+xbox.on('a', function () {
+  console.log('[A] button press');
+});
+
+xbox.on('x', function () {
+  console.log('[X] button press');
+});
+  
+xbox.on('start', function () {
+  console.log('[Start] button press');
+});
+ 
+ 
+//Manage sticks events 
+ 
+xbox.on('leftstickLeft', function () {
+  console.log('Moving [LEFTSTICK] LEFT');
+});
+ 
+xbox.on('leftstickLeft:release', function () {
+  console.log('Released [LEFTSTICK] LEFT');
+});
+ 
+xbox.on('leftstickRight', function () {
+  console.log('Moving [LEFTSTICK] RIGHT');
+});
+ 
+xbox.on('leftstickRight:release', function () {
+  console.log('Released [LEFTSTICK] RIGHT');
+})
+ 
+xbox.on('leftstickDown', function () {
+  console.log('Moving [LEFTSTICK] DOWN');
+});
+ 
+xbox.on('leftstickUp', function () {
+  console.log('Moving [LEFTSTICK] UP');
+});
