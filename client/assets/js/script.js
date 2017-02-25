@@ -68,7 +68,6 @@ var interfaceModule = (function () {
             boxes.push(new Box(i));
         }
 
-        // Probleem dat hij het terugzetten telkens op hetzelfde element doet?
         var index = 0;
         var movingBoxAnimation = setInterval(function(){
             boxes[index].animate();
@@ -90,8 +89,36 @@ var interfaceModule = (function () {
 
     };
 
+    var selectItemBox = function(player){
 
+        // This is how we kill a CSS transition in JS http://stackoverflow.com/questions/11131875/what-is-the-cleanest-way-to-disable-css-transition-effects-temporarily
+        // But I didn't need it in the end - keeping this for future reference
+       /* $('#item-3').addClass('killtransition');
+        $('#item-3').css({'right':'50%','top':'200px'});
+        $('#item-3')[0].offsetHeight;*/
 
+       // Select a random visible box to light up shortly (visibility kan je opvragen aan het object zelf, alles boven bepaalde right pos )
+           // -> "oplichten" en er een cijfer inzetten
+           // Bij buiten scherm gaan terug resetten van form
+       // Make a new box
+
+        $('#item-3').attr('src','images/item-selected.svg');
+        addItemToPlayerCollection(player);
+    };
+
+    var addItemToPlayerCollection = function(player){
+        var collected = parseInt($(player).find('.itemcollection strong').text());
+        $(player).find('.itemcollection .activeitem').css('visibility','visible')
+        $(player).find('.itemcollection strong').text(collected+1)
+    };
+
+    var unselectItemBox = function(player){
+        $('#item-3').attr('src','images/item.svg');
+        removeItemFromPlayerCollection(player);
+    };
+    var removeItemFromPlayerCollection = function(player){
+        $(player).find('.itemcollection .activeitem').css('visibility','hidden')
+    };
 
     var fillOutHealth = function ($target,newhealth) {
         $target.text(newhealth);
@@ -104,9 +131,16 @@ var interfaceModule = (function () {
         // BEWARE::: when clicking make sure the animation has finished before clicking again,
         // otherwise the numbers won't add up
         // Naturally this will be irrelevant in the "live" version with incoming server data
+        // FAKE: click
         $('main figure').on('click', function (e) {
             animateHealth(10, $(this).siblings('.healthbar').find('.visible-bar'))
         });
+
+        // FAKE: click will always go to player 2
+        $('aside').on('click',function(e){selectItemBox('#player2');})
+
+        // FAKE: take away animation from selectedItem
+        $('#player2').on('click',function(e){unselectItemBox('#player2');})
     };
 
     var animateHealth = function (decrease, $target) {

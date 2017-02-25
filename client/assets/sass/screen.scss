@@ -33,6 +33,13 @@ $orange: #FF8D00;
   text-align: center;
 }
 
+/* Filthy transition kill class  */
+.killtransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
 
 
 /**********************/
@@ -211,6 +218,45 @@ main {
 
   }
 
+  .itemcollection {
+    font-size: 1rem;
+    h3 {
+      display: inline-block;
+      font-size: 1rem; line-height: 20px;
+      padding-left: 25px;
+      background: {
+        image: url(../../images/item.svg);
+        position: left center;
+        repeat: no-repeat;
+        size: 20px 20px
+      };
+    }
+    strong
+    {
+      display: inline-block;
+      margin-bottom: 4%;
+
+    }
+    .activeitem {
+      padding-top: 45px;
+      text-align: center;
+      color: $green;
+      visibility: hidden;
+      opacity:100;
+      background: {
+        image: url(../../images/item-selected.svg);
+        position: top center;
+        repeat: no-repeat;
+        size: 40px 40px
+      };
+      animation:{
+        name: flicker;
+        duration: 1.1s;
+        iteration-count: infinite;
+      }
+    }
+  }
+
 }
 
 /*************************/
@@ -228,8 +274,40 @@ main .healthbar {
   90% {color: #FF8D00;}
   100% {color: #FBF200;}
 }
+/*
+
+// even though it is listed as an animatable property, visibility does not appear to be animatable in chrome
+// https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animated_properties
+@keyframes flicker {
+  0% {visibility: visible}
+  25% {visibility: hidden}
+  50% {visibility: visible}
+  75% {visibility: hidden}
+  100% {visibility: visible}
+
+}*/
+@keyframes flicker {
+  0% {opacity: 100}
+  20% {opacity: 0}
+  30% {opacity: 100}
+  40% {opacity: 0}
+  50% {opacity: 100}
+  60% {opacity: 0}
+  70% {opacity: 100}
+  75% {opacity: 0}
+  100% {opacity: 100}
+
+}
+
+@keyframes animateSelection {
+  0% {background-color: transparent}
+  50% {background-color: white}
+  100% { background-color: transparent}
+}
+
 
 aside .animateImg {
   right: 960px;
   transition: right 10s linear;
 }
+
