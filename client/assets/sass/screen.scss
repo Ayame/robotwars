@@ -127,6 +127,24 @@ aside {
     position: absolute;
     right: -95px;
   }
+  .timer{
+    position: absolute;
+    bottom: -20px;
+    width:100%;
+    text-align: center;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    time {
+      display: inline-block;
+      border: double 4px $orange;
+      border-radius: 20px;
+      padding: 7px;
+      text-align: center;
+      background-color: #000;
+    }
+
+  }
 }
 
 /*************************/

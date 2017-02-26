@@ -47,7 +47,11 @@ var config = {
     criticalHealth: 5,
 
     // Amount of boxes to be generated in the bullet belt
-    amountOfBoxes : 13
+    amountOfBoxes : 13,
+
+    // Standard 10 mins of battle time
+    battleDuration : new Date(Date.parse(new Date()) +  10 * 60 * 1000)
+
 };
 
 
@@ -64,6 +68,14 @@ var interfaceModule = (function () {
         fillOutHealth($('#player2 .healthbar h3 span'),health.player2);
         bindEvents();
         generateBoxes();
+        showCountDown();
+    };
+
+    var showCountDown = function(){
+        setInterval(function(){
+            var t = helperFunctions.getTimeRemaining(config.battleDuration);
+            $('.timer time').html('0' + t.minutes +':'+ t.seconds );
+        }, 1000);
     };
 
     var generateBoxes = function(){
@@ -199,6 +211,26 @@ var dataRetriever = (function () {
 
     return {};
 })();
+
+
+var helperFunctions = (function () {
+    function getTimeRemaining(endtime) {
+        var t = Date.parse(endtime) - Date.parse(new Date());
+        var seconds = Math.floor((t / 1000) % 60);
+        var minutes = Math.floor((t / 1000 / 60) % 60);
+        var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
+        var days = Math.floor(t / (1000 * 60 * 60 * 24));
+        return {
+            'total': t,
+            'days': days,
+            'hours': hours,
+            'minutes': minutes,
+            'seconds': seconds
+        };
+    }
+    return {getTimeRemaining: getTimeRemaining};
+})();
+
 
 
 $(document).ready(function () {
