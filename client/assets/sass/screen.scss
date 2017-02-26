@@ -127,6 +127,24 @@ aside {
     position: absolute;
     right: -95px;
   }
+  .timer{
+    position: absolute;
+    bottom: -20px;
+    width:100%;
+    text-align: center;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    time {
+      display: inline-block;
+      border: double 4px $orange;
+      border-radius: 20px;
+      padding: 7px;
+      text-align: center;
+      background-color: #000;
+    }
+
+  }
 }
 
 /*************************/
@@ -151,13 +169,23 @@ main {
     text-align: center;
     h2 {
       display: inline-block;
-
+      margin-bottom: 3%;
       font: {
         size: 5.625rem;
         family: $creativefont;
       }
       color: $blue;
       transform: rotate(-17deg);
+    }
+    .messages {
+      letter-spacing: 2px;
+      animation-duration: 0.4s;
+      .player1 {
+        color: $green
+      }
+      .player2 {
+        color: $red
+      }
     }
   }
 
@@ -310,4 +338,3 @@ aside .animateImg {
   right: 960px;
   transition: right 10s linear;
 }
-
