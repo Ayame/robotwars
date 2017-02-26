@@ -151,13 +151,23 @@ main {
     text-align: center;
     h2 {
       display: inline-block;
-
+      margin-bottom: 3%;
       font: {
         size: 5.625rem;
         family: $creativefont;
       }
       color: $blue;
       transform: rotate(-17deg);
+    }
+    .messages {
+      letter-spacing: 2px;
+      animation-duration: 0.4s;
+      .player1 {
+        color: $green
+      }
+      .player2 {
+        color: $red
+      }
     }
   }
 
@@ -310,4 +320,3 @@ aside .animateImg {
   right: 960px;
   transition: right 10s linear;
 }
-

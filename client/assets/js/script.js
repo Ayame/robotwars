@@ -3,6 +3,9 @@
  */
 
 var criticalHealthAudio = new Audio('assets/media/music/low-health.mp3');
+var laserBeamAudio = new Audio('assets/media/music/laser-fired.mp3');
+var itemSelectedAudio = new Audio('assets/media/music/item-selected.mp3');
+
 var isPlaying = false;
 
 
@@ -89,7 +92,7 @@ var interfaceModule = (function () {
 
     };
 
-    var selectItemBox = function(player){
+    var selectItemBox = function(player,selectedBox){
 
         // This is how we kill a CSS transition in JS http://stackoverflow.com/questions/11131875/what-is-the-cleanest-way-to-disable-css-transition-effects-temporarily
         // But I didn't need it in the end - keeping this for future reference
@@ -102,7 +105,8 @@ var interfaceModule = (function () {
            // Bij buiten scherm gaan terug resetten van form
        // Make a new box
 
-        $('#item-3').attr('src','images/item-selected.svg');
+        $(selectedBox).attr('src','images/item-selected.svg').addClass('animated').addClass('zoomOutDown');
+        itemSelectedAudio.play();
         addItemToPlayerCollection(player);
     };
 
@@ -115,6 +119,12 @@ var interfaceModule = (function () {
     var unselectItemBox = function(player){
         $('#item-3').attr('src','images/item.svg');
         removeItemFromPlayerCollection(player);
+    };
+    var fireItem = function(player){
+
+        // Need to receive item type from server
+        $('.messages').html('<p class="'+  player.substr(1) +'">'+ $(player).find('figcaption').text() +' fired a <span>3</span> damage <span>bullet</span>!</p>').show().addClass('animated').addClass('flash');
+        laserBeamAudio.play();
     };
     var removeItemFromPlayerCollection = function(player){
         $(player).find('.itemcollection .activeitem').css('visibility','hidden')
@@ -137,10 +147,13 @@ var interfaceModule = (function () {
         });
 
         // FAKE: click will always go to player 2
-        $('aside').on('click',function(e){selectItemBox('#player2');})
+        $('aside').on('click', ' .wrapper img',function(e){selectItemBox('#player2',$(this));})
 
         // FAKE: take away animation from selectedItem
-        $('#player2').on('click',function(e){unselectItemBox('#player2');})
+        $('#player2').on('click',function(e){
+            unselectItemBox('#player2');
+            fireItem('#player2');
+        })
     };
 
     var animateHealth = function (decrease, $target) {
