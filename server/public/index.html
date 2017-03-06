@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Forms</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+</head>
+<body>
+
+<form id="actions">
+	<input type="number" id="game" value="0" min="0" max="10" style="width:25px"/>
+	<input type="number" id="player" value="0" min="0" max="1" style="width:25px"/>
+	<select id="action">
+		<option value="registerplayer">register player</option>
+		<option value="requestammo">requestammo</option>
+		<option value="fire">fire</option>
+		<option value="registerhit">registerhit</option>
+	</select>
+	<input type="submit" />
+</form>
+
+<ul id="log">
+</ul>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="script.js"></script>
+
+</body>
+</html>
