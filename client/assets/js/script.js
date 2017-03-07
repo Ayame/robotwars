@@ -8,19 +8,19 @@ var itemSelectedAudio = new Audio('assets/media/music/item-selected.mp3');
 
 var isPlaying = false;
 
-function Game(started,ended,players){
+function Game(started, ended) {
     this.started = started;
     this.ended = ended;
-    this.players = players;
+    this.players = [];
 }
 
-function Player(id,name,health){
+function Player(id, name, health) {
     this.id = id;
     this.name = name;
     this.health = health;
 }
 
-function Box(id){
+function Box(id) {
     this.src = 'images/item.svg';
     this.selected = false;
     this.id = id;
@@ -28,20 +28,21 @@ function Box(id){
     this.addToHTML();
 }
 
-Box.prototype.animate = function(){
-   // $('#item-' + this.id).addClass('animateImg');
+Box.prototype.animate = function () {
+    // $('#item-' + this.id).addClass('animateImg');
     this.$htmlelement.addClass('animateImg');
     return this;
 };
 
-Box.prototype.addToHTML = function(){
-    $('aside .wrapper').append('<img src="'+ this.src +'" alt="Collectible" title="Collectible" id="item-'+ this.id +'" />');
+Box.prototype.addToHTML = function () {
+    $('aside .wrapper').append('<img src="' + this.src + '" alt="Collectible" title="Collectible" id="item-' + this.id + '" />');
     this.$htmlelement = $('#item-' + this.id);
     return this;
 };
 
-Box.prototype.moveToStartPosition = function(){console.log(this);
-   // this.$htmlelement.css('right','-95px').removeClass('animateImg').addClass('animateImg'); // This makes them turn around and go back, really cool and unexpected!
+Box.prototype.moveToStartPosition = function () {
+    console.log(this);
+    // this.$htmlelement.css('right','-95px').removeClass('animateImg').addClass('animateImg'); // This makes them turn around and go back, really cool and unexpected!
     this.$htmlelement.removeClass('animateImg');
     void this.$htmlelement[0].offsetWidth; // Some magic I found on https://css-tricks.com/restart-css-animation/
     this.$htmlelement.addClass('animateImg');
@@ -58,16 +59,19 @@ var config = {
     criticalHealth: 5,
 
     // Amount of boxes to be generated in the bullet belt
-    amountOfBoxes : 13,
+    amountOfBoxes: 13,
 
     // Standard 10 mins of battle time
-    battleDuration : new Date(Date.parse(new Date()) +  10 * 60 * 1000),
+    battleDuration: new Date(Date.parse(new Date()) + 10 * 60 * 1000),
 
     // Default first game ID
-    startGameId: 1,
+    gameId: 0,
 
     // Webservice url
-    serverUrl: 'http://localhost:3000'
+    serverUrl: 'http://localhost:3000',
+
+    // Show console messages
+    verbose: true
 
 };
 
@@ -80,21 +84,21 @@ var interfaceModule = (function () {
     // Boxes collection
     var boxes = [];
 
-    var currentGame = {};
+    var currentGame;
 
     var init = function () {
 
         // Show intro for a second -> fade to waiting screen (CSS animation triggered)
 
-        setTimeout(function(){
+        setTimeout(function () {
 
             $('#splashscreen').addClass('animated').addClass('slideOutUp');
 
-            $('#splashscreen').on('animationend',function(){
+            $('#splashscreen').on('animationend', function () {
 
-                $('#splashscreen').css({'display':'none'}); // because the animation library does not reset this property
+                $('#splashscreen').css({'display': 'none'}); // because the animation library does not reset this property
 
-                $('#container').css('display','block').addClass('animated').addClass('slideInUp');
+                $('#container').css('display', 'block').addClass('animated').addClass('slideInUp');
 
                 // Add message waiting for players
                 $('#vs .messages').html('<p class="waiting animated pulse">Waiting for players</p>');
@@ -102,100 +106,156 @@ var interfaceModule = (function () {
                 // Get game from server with all its info
                 getCurrentGame();
 
-               // fillOutHealth($('#player1 .healthbar h3 span'),health.player1);
-               // fillOutHealth($('#player2 .healthbar h3 span'),health.player2);
+                // fillOutHealth($('#player1 .healthbar h3 span'),health.player1);
+                // fillOutHealth($('#player2 .healthbar h3 span'),health.player2);
                 bindEvents();
 
                 //generateBoxes(); Add later
-               // showCountDown(); Add later
+                // showCountDown(); Add later
             });
 
-        },1500); // Stick to 1500ms to allow for initial animation to finish
+        }, 1500); // Stick to 1500ms to allow for initial animation to finish
 
 
     };
 
-    var getCurrentGame = function(){
-        $.ajax({
-            url: config.serverUrl + '/game',
-            method: 'GET'
-        }).done(function(response){
-            console.log(response);
-        });
+    var getCurrentGame = function () {
+
+        // IIFE to ensure scoping for poll() remains secure
+        (function poll() {
+            setTimeout(function () {
+                $.ajax({
+                    url: config.serverUrl + '/game/' + config.gameId,
+                    method: 'GET',
+                    dataType: 'json'
+                }).done(function (response) {
+
+                    if (typeof currentGame === 'undefined') {
+                        currentGame = new Game(response.started, response.ended);
+                        verbose.log(['--- INFO --- Created a new game',currentGame])
+                    }
+                    console.log("amount players",response.players);
+                    // Check for players
+                    response.players.forEach(function (player) {
+
+                            // Check if in Game.players already
+                            if (
+                                currentGame.players.find((p) => {
+                                    return p.id === player.id
+                                }) === undefined
+
+                            ) {
+                                // Add if not and consider it the first player
+                                currentGame.players.push(new Player(player.id, 'Player Name', player.health));
+
+                                // Check how many players there are now
+                                if(currentGame.players.length === 1){
+                                    $('#player1 .ready').css('display', 'inline-block'); //TODO: Showing toch met visibility doen want het verspringt
+                                    $('#player2 .hurry').show();
+                                } else {
+                                    // The second player has been added, move to the next screen
+                                    $('#player2 .hurry').hide();
+                                    $('#player2 .ready').css('display', 'inline-block');
+
+                                    // TODO: Can I break a function here so that poll() is not invoked later on?
+
+                                    // Start animation new screen
+                                }
+
+                            } else { console.log('player already in array',player)}
+
+                        console.log("processed",player);
+
+                    });
+
+                    // Stop polling
+                    if (response.players.length === 2) {
+                        console.log('stop polling');
+                        verbose.log(['--- INFO --- Initialising game',currentGame])
+                    } else {
+                        poll();
+                    }
+                });
+
+
+            }, 2000);
+        })();
+
+
     };
 
-    var showCountDown = function(){
-        setInterval(function(){
+    var showCountDown = function () {
+        setInterval(function () {
             var t = helperFunctions.getTimeRemaining(config.battleDuration);
-            $('.timer time').html('0' + t.minutes +':'+ t.seconds );
+            $('.timer time').html('0' + t.minutes + ':' + t.seconds);
         }, 1000);
     };
 
-    var generateBoxes = function(){
-        for(var i= 0; i<config.amountOfBoxes; i++){
+    var generateBoxes = function () {
+        for (var i = 0; i < config.amountOfBoxes; i++) {
             boxes.push(new Box(i));
         }
 
         var index = 0;
-        var movingBoxAnimation = setInterval(function(){
+        var movingBoxAnimation = setInterval(function () {
             boxes[index].animate();
 
             // Bind animation ended -> move to start position
-            boxes[index].$htmlelement.on('transitionend',function(escapedIndex){
-                return function(){
-                   boxes[escapedIndex].moveToStartPosition.call(boxes[escapedIndex])
+            boxes[index].$htmlelement.on('transitionend', function (escapedIndex) {
+                return function () {
+                    boxes[escapedIndex].moveToStartPosition.call(boxes[escapedIndex])
                 }
             }(index)); // Escape the closure my sweeties!
 
-            if(index<config.amountOfBoxes - 1){
+            if (index < config.amountOfBoxes - 1) {
                 index++;
             } else {
                 clearInterval(movingBoxAnimation);
             }
 
-        },760);
+        }, 760);
 
     };
 
-    var selectItemBox = function(player,selectedBox){
+    var selectItemBox = function (player, selectedBox) {
 
         // This is how we kill a CSS transition in JS http://stackoverflow.com/questions/11131875/what-is-the-cleanest-way-to-disable-css-transition-effects-temporarily
         // But I didn't need it in the end - keeping this for future reference
-       /* $('#item-3').addClass('killtransition');
-        $('#item-3').css({'right':'50%','top':'200px'});
-        $('#item-3')[0].offsetHeight;*/
+        /* $('#item-3').addClass('killtransition');
+         $('#item-3').css({'right':'50%','top':'200px'});
+         $('#item-3')[0].offsetHeight;*/
 
-       // Select a random visible box to light up shortly (visibility kan je opvragen aan het object zelf, alles boven bepaalde right pos )
-           // -> "oplichten" en er een cijfer inzetten
-           // Bij buiten scherm gaan terug resetten van form
-       // Make a new box
+        // Select a random visible box to light up shortly (visibility kan je opvragen aan het object zelf, alles boven bepaalde right pos )
+        // -> "oplichten" en er een cijfer inzetten
+        // Bij buiten scherm gaan terug resetten van form
+        // Make a new box
 
-        $(selectedBox).attr('src','images/item-selected.svg').addClass('animated').addClass('zoomOutDown');
+        $(selectedBox).attr('src', 'images/item-selected.svg').addClass('animated').addClass('zoomOutDown');
         itemSelectedAudio.play();
         addItemToPlayerCollection(player);
     };
 
-    var addItemToPlayerCollection = function(player){
+    var addItemToPlayerCollection = function (player) {
         var collected = parseInt($(player).find('.itemcollection strong').text());
-        $(player).find('.itemcollection .activeitem').css('visibility','visible')
-        $(player).find('.itemcollection strong').text(collected+1)
+        $(player).find('.itemcollection .activeitem').css('visibility', 'visible')
+        $(player).find('.itemcollection strong').text(collected + 1)
     };
 
-    var unselectItemBox = function(player){
-        $('#item-3').attr('src','images/item.svg');
+    var unselectItemBox = function (player) {
+        $('#item-3').attr('src', 'images/item.svg');
         removeItemFromPlayerCollection(player);
     };
-    var fireItem = function(player){
+    var fireItem = function (player) {
 
         // Need to receive item type from server
-        $('.messages').html('<p class="'+  player.substr(1) +'">'+ $(player).find('figcaption').text() +' fired a <span>3</span> damage <span>bullet</span>!</p>').show().addClass('animated').addClass('flash');
+        $('.messages').html('<p class="' + player.substr(1) + '">' + $(player).find('figcaption').text() + ' fired a <span>3</span> damage <span>bullet</span>!</p>').show().addClass('animated').addClass('flash');
         laserBeamAudio.play();
     };
-    var removeItemFromPlayerCollection = function(player){
-        $(player).find('.itemcollection .activeitem').css('visibility','hidden')
+    var removeItemFromPlayerCollection = function (player) {
+        $(player).find('.itemcollection .activeitem').css('visibility', 'hidden')
     };
 
-    var fillOutHealth = function ($target,newhealth) {
+    var fillOutHealth = function ($target, newhealth) {
         $target.text(newhealth);
     };
     var bindEvents = function () {
@@ -212,10 +272,12 @@ var interfaceModule = (function () {
         });
 
         // FAKE: click will always go to player 2
-        $('aside').on('click', ' .wrapper img',function(e){selectItemBox('#player2',$(this));})
+        $('aside').on('click', ' .wrapper img', function (e) {
+            selectItemBox('#player2', $(this));
+        })
 
         // FAKE: take away animation from selectedItem
-        $('#player2').on('click',function(e){
+        $('#player2').on('click', function (e) {
             unselectItemBox('#player2');
             fireItem('#player2');
         })
@@ -224,8 +286,8 @@ var interfaceModule = (function () {
     var animateHealth = function (decrease, $target) {
 
         var $parent = $target.closest('.healthbar').parent();
-        health[$parent.attr('id')] -=  decrease / 200 * 100;
-        fillOutHealth($('#' + $parent.attr('id') +' .healthbar h3 span'),health[$parent.attr('id')]);
+        health[$parent.attr('id')] -= decrease / 200 * 100;
+        fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), health[$parent.attr('id')]);
 
         var newWidth = $target.width() - decrease;
         $target.animate({width: newWidth}, 150, 'linear');
@@ -243,14 +305,14 @@ var interfaceModule = (function () {
 
             $parent.children('.critical').css('visibility', 'hidden');
             criticalHealthAudio.pause();
-            fillOutHealth($('#' + $parent.attr('id') +' .healthbar h3 span'),0);
+            fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
 
             // Trigger "died" event here
 
         }
     };
 
-    var animateBox = function(){
+    var animateBox = function () {
 
     };
 
@@ -264,6 +326,19 @@ var dataRetriever = (function () {
 
     return {};
 })();
+
+
+var verbose = (function(logger){
+// TO DO: deftig met call en args doen
+    var log = function(message){
+        if(config.verbose){
+            logger.log(message)
+        }
+    }
+    return {
+        log: log
+    }
+})(console);
 
 
 var helperFunctions = (function () {
@@ -281,9 +356,9 @@ var helperFunctions = (function () {
             'seconds': seconds
         };
     }
+
     return {getTimeRemaining: getTimeRemaining};
 })();
-
 
 
 $(document).ready(function () {
