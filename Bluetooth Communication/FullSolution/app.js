@@ -1,7 +1,9 @@
+var debounce = require('debounce');
 var serialport = require('serialport');
 //var readline = require('readline');
 var WebSocketServer = require('ws').Server;
 var xbox = require('xbox-controller-node');
+var request = require('request');
 
 var portname = process.argv[2];
 
@@ -34,7 +36,7 @@ function handleConnection(client) {
 	console.log("New Connection"); // you have a new client
 	connections.push(client); // add this client to the connections array
 
-	client.on('message', sendData); // when a client sends a message,
+	client.on('message', sendDataBluetooth); // when a client sends a message,
 
 	client.on('close', function() { // when a client closes its connection
 	console.log("connection closed"); // print it out
@@ -57,7 +59,7 @@ function onrecieveData(data)
 	console.log("Received data: " + data);
 }
 
-function sendData(data)
+function sendDataBluetooth(data)
 {
 	console.log("sending to serial: " + data);
 	myPort.write("");
@@ -65,66 +67,54 @@ function sendData(data)
 	myPort.write("\n");
 }
 
+function sendDataServer(data, method)
+{
+// Set the headers
+var headers = {
+    'User-Agent':       'Super Agent/0.0.1',
+    'Content-Type':     'application/x-www-form-urlencoded'
+}
+
+if method == "GET"
+{
+	// Configure the request
+	var options = {
+		url: 'http://localhost:3000',
+		method: 'GET',
+		headers: headers,
+		qs: {data}
+	}	
+}else{
+		// Configure the request
+	var options = {
+		url: 'http://localhost:3000',
+		method: 'POST',
+		headers: headers,
+		form: {'key': data}
+	}
+
+}
+
+// Start the request
+request(options, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+        // Print out the response body
+        console.log(body);
+    }
+})
+	
+}
+
 function showError(error) 
 {
    console.log('Serial port error: ' + error);
 }
 
-
-//use of the xbox gamepad instead of web cliÃ«nt controller
-xbox.on('a', function () {
-  console.log('[A] button press');
-  sendData("FIRE");
-});
-
-xbox.on('x', function () {
-  console.log('[X] button press');
-  sendData("GETAMMO");
-});
-  
-xbox.on('start', function () {
-  console.log('[Start] button press');
-  sendData("LOGIN");
-});
- 
-//Manage sticks events 
- 
-xbox.on('leftstickLeft', function () {
-  console.log('Moving [LEFTSTICK] LEFT');
-  sendData("left");
-});
- 
-xbox.on('leftstickLeft:release', function () {
-  console.log('Released [LEFTSTICK] LEFT');
-  sendData("stopMotor");
-});
- 
-xbox.on('leftstickRight', function () {
-  console.log('Moving [LEFTSTICK] RIGHT');
-  sendData("right");
-});
- 
-xbox.on('leftstickRight:release', function () {
-  console.log('Released [LEFTSTICK] RIGHT');
-  sendData("stopMotor");
-})
- 
-xbox.on('leftstickDown', function () {
-  console.log('Moving [LEFTSTICK] DOWN');
-  sendData("backwards");
-});
- 
-xbox.on('leftstickUp', function () {
-  console.log('Moving [LEFTSTICK] UP');
-  sendData("forward");
-});
-
-xbox.on('leftstickUp:release', function () {
-  console.log('Moving [LEFTSTICK] UP');
-  sendData("stopMotor");
-});
-
-xbox.on('leftstickDown:release', function () {
-  console.log('Moving [LEFTSTICK] UP');
-  sendData("stopMotor");
-});
+//use of the xbox gamepad instead of web cliënt controller
+xbox.on('a', debounce(sendDataBluetooth("f", 200));
+xbox.on('x', debounce(sendDataServer("{GETAMMO}", "GET", 200));
+xbox.on('start', debounce(sendDataServer("LOGIN", "POST", 200));
+xbox.on('up', debounce(sendDataBluetooth("d", 200));
+xbox.on('down', debounce(sendDataBluetooth("b", 200));
+xbox.on('left', debounce(sendDataBluetooth("l", 200));
+xbox.on('right', debounce(sendDataBluetooth("r", 200));
