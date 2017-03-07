@@ -8,6 +8,17 @@ var itemSelectedAudio = new Audio('assets/media/music/item-selected.mp3');
 
 var isPlaying = false;
 
+function Game(started,ended,players){
+    this.started = started;
+    this.ended = ended;
+    this.players = players;
+}
+
+function Player(id,name,health){
+    this.id = id;
+    this.name = name;
+    this.health = health;
+}
 
 function Box(id){
     this.src = 'images/item.svg';
@@ -50,7 +61,13 @@ var config = {
     amountOfBoxes : 13,
 
     // Standard 10 mins of battle time
-    battleDuration : new Date(Date.parse(new Date()) +  10 * 60 * 1000)
+    battleDuration : new Date(Date.parse(new Date()) +  10 * 60 * 1000),
+
+    // Default first game ID
+    startGameId: 1,
+
+    // Webservice url
+    serverUrl: 'http://localhost:3000'
 
 };
 
@@ -63,12 +80,48 @@ var interfaceModule = (function () {
     // Boxes collection
     var boxes = [];
 
+    var currentGame = {};
+
     var init = function () {
-        fillOutHealth($('#player1 .healthbar h3 span'),health.player1);
-        fillOutHealth($('#player2 .healthbar h3 span'),health.player2);
-        bindEvents();
-        generateBoxes();
-        showCountDown();
+
+        // Show intro for a second -> fade to waiting screen (CSS animation triggered)
+
+        setTimeout(function(){
+
+            $('#splashscreen').addClass('animated').addClass('slideOutUp');
+
+            $('#splashscreen').on('animationend',function(){
+
+                $('#splashscreen').css({'display':'none'}); // because the animation library does not reset this property
+
+                $('#container').css('display','block').addClass('animated').addClass('slideInUp');
+
+                // Add message waiting for players
+                $('#vs .messages').html('<p class="waiting animated pulse">Waiting for players</p>');
+
+                // Get game from server with all its info
+                getCurrentGame();
+
+               // fillOutHealth($('#player1 .healthbar h3 span'),health.player1);
+               // fillOutHealth($('#player2 .healthbar h3 span'),health.player2);
+                bindEvents();
+
+                //generateBoxes(); Add later
+               // showCountDown(); Add later
+            });
+
+        },1500); // Stick to 1500ms to allow for initial animation to finish
+
+
+    };
+
+    var getCurrentGame = function(){
+        $.ajax({
+            url: config.serverUrl + '/game',
+            method: 'GET'
+        }).done(function(response){
+            console.log(response);
+        });
     };
 
     var showCountDown = function(){
