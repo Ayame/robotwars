@@ -71,7 +71,10 @@ var config = {
     serverUrl: 'http://localhost:3000',
 
     // Show console messages
-    verbose: true
+    verbose: true,
+
+    // Mulitply health by this value to gain percentage health and avoid calculations all throughout the application
+    healthFactor: 5
 
 };
 
@@ -79,7 +82,7 @@ var config = {
 var interfaceModule = (function () {
 
     // Precentage health not to have rounding issues
-    var health = {player1: 100, player2: 100};
+    //var health = {player1: 100, player2: 100};
 
     // Boxes collection
     var boxes = [];
@@ -106,12 +109,9 @@ var interfaceModule = (function () {
                 // Get game from server with all its info
                 getCurrentGame();
 
-                // fillOutHealth($('#player1 .healthbar h3 span'),health.player1);
-                // fillOutHealth($('#player2 .healthbar h3 span'),health.player2);
-                bindEvents();
+                bindEvents(); // Will be removed in time
 
-                //generateBoxes(); Add later
-                // showCountDown(); Add later
+
             });
 
         }, 1500); // Stick to 1500ms to allow for initial animation to finish
@@ -122,6 +122,7 @@ var interfaceModule = (function () {
     var getCurrentGame = function () {
 
         // IIFE to ensure scoping for poll() remains secure
+        // TODO: I should really clean this up.. not now though
         (function poll() {
             setTimeout(function () {
                 $.ajax({
@@ -134,7 +135,7 @@ var interfaceModule = (function () {
                         currentGame = new Game(response.started, response.ended);
                         verbose.log(['--- INFO --- Created a new game',currentGame])
                     }
-                    console.log("amount players",response.players);
+
                     // Check for players
                     response.players.forEach(function (player) {
 
@@ -146,20 +147,23 @@ var interfaceModule = (function () {
 
                             ) {
                                 // Add if not and consider it the first player
-                                currentGame.players.push(new Player(player.id, 'Player Name', player.health));
+                                currentGame.players.push(new Player(player.id, 'Player Name', player.health * config.healthFactor ));
 
                                 // Check how many players there are now
                                 if(currentGame.players.length === 1){
-                                    $('#player1 .ready').css('display', 'inline-block'); //TODO: Showing toch met visibility doen want het verspringt
+                                    $('#player1 .ready').css('display', 'inline-block');
                                     $('#player2 .hurry').show();
                                 } else {
                                     // The second player has been added, move to the next screen
                                     $('#player2 .hurry').hide();
                                     $('#player2 .ready').css('display', 'inline-block');
 
-                                    // TODO: Can I break a function here so that poll() is not invoked later on?
 
                                     // Start animation new screen
+                                    initGame();
+
+                                    // TODO: Can I break a function here so that poll() is not invoked later on? return just breaks me out of the foreach... or do I need to result to a for?
+                                    return;
                                 }
 
                             } else { console.log('player already in array',player)}
@@ -169,18 +173,37 @@ var interfaceModule = (function () {
                     });
 
                     // Stop polling
-                    if (response.players.length === 2) {
-                        console.log('stop polling');
-                        verbose.log(['--- INFO --- Initialising game',currentGame])
-                    } else {
-                        poll();
-                    }
+                    (response.players.length === 2) ?
+                            verbose.log(['--- INFO --- Stopped polling for players']) :
+                            poll();
+
                 });
 
 
             }, 2000);
         })();
 
+
+    };
+
+    var initGame = function(){
+        verbose.log(['--- INFO --- Initialising game',currentGame]);
+
+        // Fade necessary boxes
+        $('.ready, .messages p').addClass('animated').addClass('fadeOut').on('animationend',function () {
+            $('.ready,.hurry').css('display','none');
+            $('.messages p').remove();
+
+            // Bring back the boxes
+            $('aside,.healthbar').css('display','block').addClass('animated').addClass('fadeInUp');
+            generateBoxes();
+
+            showCountDown();
+        });
+
+        // Yeah yeah can be optimised for more players but not now
+         fillOutHealth($('#player1 .healthbar h3 span'),currentGame.players[0].health);
+         fillOutHealth($('#player2 .healthbar h3 span'),currentGame.players[1].health);
 
     };
 
@@ -267,7 +290,7 @@ var interfaceModule = (function () {
         // otherwise the numbers won't add up
         // Naturally this will be irrelevant in the "live" version with incoming server data
         // FAKE: click
-        $('main figure').on('click', function (e) {
+        $('main').on('click', 'figure',function (e) {
             animateHealth(10, $(this).siblings('.healthbar').find('.visible-bar'))
         });
 
@@ -286,8 +309,9 @@ var interfaceModule = (function () {
     var animateHealth = function (decrease, $target) {
 
         var $parent = $target.closest('.healthbar').parent();
-        health[$parent.attr('id')] -= decrease / 200 * 100;
-        fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), health[$parent.attr('id')]);
+        var playerIndex = parseInt($parent.attr('id').replace('player','')) - 1; console.log(playerIndex,'player index')
+        currentGame.players[playerIndex].health -= decrease / 200 * 100;
+        fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), currentGame.players[playerIndex].health);
 
         var newWidth = $target.width() - decrease;
         $target.animate({width: newWidth}, 150, 'linear');
