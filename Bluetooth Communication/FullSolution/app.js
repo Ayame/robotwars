@@ -24,6 +24,8 @@ var SERVER_PORT = 8081;               // port number for the webSocket server
 var wss = new WebSocketServer({port: SERVER_PORT}); // the webSocket server
 var connections = new Array;          // list of connections to the server
 
+let playerID;
+
 
 myPort.on('open', onOpen);
 myPort.on('data', onrecieveData);
@@ -57,6 +59,10 @@ function onrecieveData(data)
 		connections[myConnection].send(data); // send the data to each connection
 	 }
 	console.log("Received data: " + data);
+	if(data = 'HIT')
+	{
+		 sendDataServer('/game/0/player/' + playerID + '/hit', 'POST');
+	}
 }
 
 function sendDataBluetooth(data)
@@ -69,40 +75,34 @@ function sendDataBluetooth(data)
 
 function sendDataServer(data, method)
 {
-// Set the headers
-var headers = {
-    'User-Agent':       'Super Agent/0.0.1',
-    'Content-Type':     'application/x-www-form-urlencoded'
-}
-
-if method == "GET"
-{
-	// Configure the request
-	var options = {
-		url: 'http://localhost:3000',
-		method: 'GET',
-		headers: headers,
-		qs: {data}
-	}	
-}else{
-		// Configure the request
-	var options = {
-		url: 'http://localhost:3000',
-		method: 'POST',
-		headers: headers,
-		form: {'key': data}
+	
+	var url = 'http://localhost:3000' + data;
+	// Set the headers
+	var headers = {
+		'User-Agent':       'Super Agent/0.0.1',
+		'Content-Type':     'application/x-www-form-urlencoded'
 	}
 
-}
+	// Configure the request
+	var options = {
+		url: url,
+		method: method,
+		headers: headers,
+	}
 
-// Start the request
-request(options, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-        // Print out the response body
-        console.log(body);
-    }
-})
-	
+	console.log(url);
+	// Start the request
+	request(options, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			// Print out the response body
+			var obj = JSON.parse(body);
+			
+			if(obj.action == 'identifyPlayer')
+			{
+				playerID = obj.result.id;
+			}
+		}
+	});
 }
 
 function showError(error) 
@@ -111,10 +111,36 @@ function showError(error)
 }
 
 //use of the xbox gamepad instead of web cliënt controller
-xbox.on('a', debounce(sendDataBluetooth("f", 200));
-xbox.on('x', debounce(sendDataServer("{GETAMMO}", "GET", 200));
-xbox.on('start', debounce(sendDataServer("LOGIN", "POST", 200));
-xbox.on('up', debounce(sendDataBluetooth("d", 200));
-xbox.on('down', debounce(sendDataBluetooth("b", 200));
-xbox.on('left', debounce(sendDataBluetooth("l", 200));
-xbox.on('right', debounce(sendDataBluetooth("r", 200));
+xbox.on('error', showError);
+xbox.on('a',debounce( function () {
+  sendDataBluetooth('f');
+  sendDataServer('/game/0/player/' + playerID + '/ammo', 'GET');
+}));
+
+xbox.on('x',debounce( function () {
+   sendDataServer('/game/0/player/' + playerID + '/ammo', 'POST');
+}));
+
+xbox.on('b',debounce( function () {
+  sendDataBluetooth('s');
+}));
+
+xbox.on('start',debounce( function () {
+  sendDataServer('/game/0/player', 'POST');
+}));
+
+xbox.on('up',debounce( function () {
+  sendDataBluetooth('d');
+}));
+
+xbox.on('down',debounce( function () {
+  sendDataBluetooth('b');
+}));
+
+xbox.on('left',debounce( function () {
+  sendDataBluetooth('l');
+}));
+
+xbox.on('right',debounce( function () {
+  sendDataBluetooth('r');
+}));
