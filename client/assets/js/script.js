@@ -5,6 +5,7 @@
 var criticalHealthAudio = new Audio('assets/media/music/low-health.mp3');
 var laserBeamAudio = new Audio('assets/media/music/laser-fired.mp3');
 var itemSelectedAudio = new Audio('assets/media/music/item-selected.mp3');
+var hitAudio = new Audio('assets/media/music/hit.mp3');
 
 var config = {
     // Droids have 20 health points, we should receive this from the server ideally
@@ -30,6 +31,7 @@ var config = {
 
     // Mulitply health by this value to gain percentage health and avoid calculations all throughout the application
     healthFactor: 5
+
 
 };
 
@@ -58,12 +60,21 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame) {
     var $parent = $target.closest('.healthbar').parent();
     var playerIndex = parseInt($parent.attr('id').replace('player','')) - 1;
     currentGame.players[playerIndex].health -= decrease / 200 * 100;
-    fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), currentGame.players[playerIndex].health);
+    this.fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), currentGame.players[playerIndex].health);
 
     var newWidth = $target.width() - decrease;
     $target.animate({width: newWidth}, 150, 'linear');
 
     var criticalWidth = Math.round(newWidth / $target.closest('.wrapper').width() * config.droidHealth);
+
+    // Play audio
+    hitAudio.play();
+
+    // Show flickering image
+    var $figure = $('#' + this.htmlId + ' figure');
+    $figure.addClass('hit').on('animationend',function(){
+        $figure.removeClass('hit');
+    });
 
     if (criticalWidth < config.criticalHealth) {
 
@@ -76,11 +87,15 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame) {
 
         $parent.children('.critical').css('visibility', 'hidden');
         criticalHealthAudio.pause();
-        fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
+        this.fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
 
         // Trigger "died" event here
 
     }
+};
+
+Player.prototype.fillOutHealth = function ($target, newhealth) {
+    $target.text(newhealth);
 };
 
 function Box(id) {
@@ -169,7 +184,7 @@ var interfaceModule = (function () {
 
                     if (typeof currentGame === 'undefined') {
                         currentGame = new Game(response.started, response.ended);
-                        verbose.log('--- INFO --- Created a new game',currentGame)
+                        verbose.log('--- INFO --- Created a new game')
                     }
 
                     // Check for players
@@ -224,7 +239,7 @@ var interfaceModule = (function () {
     };
 
     var initRound = function(){
-        verbose.log('--- INFO --- Initialising game',currentGame);
+        verbose.log('--- INFO --- Initialising game');
 
         //TODO: Should be called after ALL animations have ended - but that's a worry for later
         // Fade necessary boxes
@@ -244,8 +259,10 @@ var interfaceModule = (function () {
         });
 
         // Yeah yeah can be optimised for more players but not now
-         fillOutHealth($('#player1 .healthbar h3 span'),currentGame.players[0].health);
-         fillOutHealth($('#player2 .healthbar h3 span'),currentGame.players[1].health);
+        currentGame.players.forEach(function(p){
+            p.fillOutHealth($('#'+ p.htmlId +' .healthbar h3 span'),p.health)
+        });
+         //fillOutHealth($('#player1 .healthbar h3 span'),currentGame.players[0].health);
 
     };
 
@@ -282,7 +299,7 @@ var interfaceModule = (function () {
 
                                 // continue polling when last item has finished - put in the loop to ensure all other items have been processed
                                 if(actionIndex === actions.length -1){
-                                    console.log(['--- INFO --- Final element in queue, repolling for new events']);
+                                    console.log('--- INFO --- Final element in queue, repolling for new events');
                                     pollRound();
                                 }
                             });
@@ -357,9 +374,13 @@ var interfaceModule = (function () {
         $(player).find('.itemcollection strong').text(collected + 1)
     };
 
-    var unselectItemBox = function (player) {
-        $('#item-3').attr('src', 'images/item.svg');
-        removeItemFromPlayerCollection(player);
+    var unselectItemBox = function (action) {
+        //$('#item-3').attr('src', 'images/item.svg');
+
+        // TODO: fix set it to the right box, now I've reset all boxes because it doesn't really matter
+        $('.wrapper img').attr('src', 'images/item.svg').removeClass('selected').removeClass('zoomOutDown').removeClass('animated');
+
+        removeItemFromPlayerCollection('#'+currentGame.getPlayerById(action.player).htmlId); // Format #player2
     };
     var fireItem = function (action) {
         var player = currentGame.getPlayerById(action.player).htmlId;
@@ -372,9 +393,7 @@ var interfaceModule = (function () {
         $(player).find('.itemcollection .activeitem').css('visibility', 'hidden')
     };
 
-    var fillOutHealth = function ($target, newhealth) {
-        $target.text(newhealth);
-    };
+
     var bindEvents = function () {
         // listen to incoming stuff
 
@@ -389,18 +408,9 @@ var interfaceModule = (function () {
         });
 
 
-        // FAKE: take away animation from selectedItem
-        $('#player2').on('click', function (e) {
-            unselectItemBox('#player2');
-
-        })
-    };
-
-
-
-    var animateBox = function () {
 
     };
+
 
     /********  SPECIAL ACTION FUNCTIONS **********/
 
@@ -411,14 +421,16 @@ var interfaceModule = (function () {
     };
 
     var fire = function(action){
-        verbose.log('%c --- FIRE --- for ' + currentGame.getPlayerById(action.player).htmlId,'background: #F00; color: #FFF');
+        verbose.log('%c --- FIRE --- for ' + currentGame.getPlayerById(action.player).htmlId + ' with ' + action.value.hit + ' damage','background: #F00; color: #FFF');
         fireItem(action);
+        unselectItemBox(action);
     };
 
     var takeHit = function(action){
-        verbose.log('%c --- HIT --- for ' + currentGame.getPlayerById(action.player).htmlId,'background: #0FF; color: #FFF');
-        console.log('takeHit worked!')
-    }
+        var currentPlayer = currentGame.getPlayerById(action.player);
+        verbose.log('%c --- HIT --- for ' + currentPlayer.htmlId + ' with ' + action.value + ' damage','background: #0FF; color: #FFF');
+        currentPlayer.animateHealth(action.value * config.healthFactor, $('#'+currentPlayer.htmlId + ' figure').siblings('.healthbar').find('.visible-bar'),currentGame);
+    };
 
 
 

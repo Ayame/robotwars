@@ -221,6 +221,13 @@ main {
       margin-top: 4%;
     }
   }
+  .hit {
+    animation:{
+      name: flicker;
+      duration: 1.1s;
+      iteration-count: 1;
+    }
+  }
 
 
   .healthbar {
