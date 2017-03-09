@@ -39,11 +39,42 @@ function Game(started, ended) {
     this.players = [];
 }
 
-function Player(id, name, health) {
+function Player(id, name, health,htmlId) {
     this.id = id;
     this.name = name;
     this.health = health;
+    this.htmlId = htmlId;
 }
+
+Player.prototype.animateHealth = function (decrease, $target,currentGame) {
+
+    var $parent = $target.closest('.healthbar').parent();
+    var playerIndex = parseInt($parent.attr('id').replace('player','')) - 1;
+    currentGame.players[playerIndex].health -= decrease / 200 * 100;
+    fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), currentGame.players[playerIndex].health);
+
+    var newWidth = $target.width() - decrease;
+    $target.animate({width: newWidth}, 150, 'linear');
+
+    var criticalWidth = Math.round(newWidth / $target.closest('.wrapper').width() * config.droidHealth);
+
+    if (criticalWidth < config.criticalHealth) {
+
+        $parent.children('.critical').css('visibility', 'visible');
+        criticalHealthAudio.play();
+
+        console.log('WARNING: ' + $parent.attr('id') + ' is in critical condition!')
+    }
+    if (criticalWidth < 0) {
+
+        $parent.children('.critical').css('visibility', 'hidden');
+        criticalHealthAudio.pause();
+        fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
+
+        // Trigger "died" event here
+
+    }
+};
 
 function Box(id) {
     this.src = 'images/item.svg';
@@ -149,7 +180,12 @@ var interfaceModule = (function () {
 
             ) {
                 // Add if not and consider it the first player
-                currentGame.players.push(new Player(player.id, 'Player Name', player.health * config.healthFactor ));
+                currentGame.players.push(new Player(player.id,
+                                                    player.name,
+                                                    player.health * config.healthFactor,
+                                                    'player'+(currentGame.players.length + 1) ));
+
+                verbose.log(['--- INFO --- player processed',player.name]);
 
                 // Check how many players there are now
                 if(currentGame.players.length === 1){
@@ -168,7 +204,6 @@ var interfaceModule = (function () {
                 }
 
             }
-            verbose.log(['--- INFO --- player processed'],player);
         }
     };
 
@@ -234,9 +269,6 @@ var interfaceModule = (function () {
          $('#item-3').css({'right':'50%','top':'200px'});
          $('#item-3')[0].offsetHeight;*/
 
-        // Select a random visible box to light up shortly (visibility kan je opvragen aan het object zelf, alles boven bepaalde right pos )
-        // -> "oplichten" en er een cijfer inzetten
-        // Bij buiten scherm gaan terug resetten van form
         // Make a new box
 
         $(selectedBox).attr('src', 'images/item-selected.svg').addClass('animated').addClass('zoomOutDown');
@@ -255,7 +287,6 @@ var interfaceModule = (function () {
         removeItemFromPlayerCollection(player);
     };
     var fireItem = function (player) {
-
         // Need to receive item type from server
         $('.messages').html('<p class="' + player.substr(1) + '">' + $(player).find('figcaption').text() + ' fired a <span>3</span> damage <span>bullet</span>!</p>').show().addClass('animated').addClass('flash');
         laserBeamAudio.play();
@@ -275,7 +306,7 @@ var interfaceModule = (function () {
         // BEWARE::: when clicking make sure the animation has finished before clicking again,
         // otherwise the numbers won't add up
         // Naturally this will be irrelevant in the "live" version with incoming server data
-        // FAKE: click
+        // FAKE: click -> needs to be modified with event from webserver
         $('main').on('click', 'figure',function (e) {
             animateHealth(10, $(this).siblings('.healthbar').find('.visible-bar'))
         });
@@ -292,35 +323,7 @@ var interfaceModule = (function () {
         })
     };
 
-    var animateHealth = function (decrease, $target) {
 
-        var $parent = $target.closest('.healthbar').parent();
-        var playerIndex = parseInt($parent.attr('id').replace('player','')) - 1; console.log(playerIndex,'player index')
-        currentGame.players[playerIndex].health -= decrease / 200 * 100;
-        fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), currentGame.players[playerIndex].health);
-
-        var newWidth = $target.width() - decrease;
-        $target.animate({width: newWidth}, 150, 'linear');
-
-        var criticalWidth = Math.round(newWidth / $target.closest('.wrapper').width() * config.droidHealth);
-
-        if (criticalWidth < config.criticalHealth) {
-
-            $parent.children('.critical').css('visibility', 'visible');
-            criticalHealthAudio.play();
-
-            console.log('WARNING: ' + $parent.attr('id') + ' is in critical condition!')
-        }
-        if (criticalWidth < 0) {
-
-            $parent.children('.critical').css('visibility', 'hidden');
-            criticalHealthAudio.pause();
-            fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
-
-            // Trigger "died" event here
-
-        }
-    };
 
     var animateBox = function () {
 
