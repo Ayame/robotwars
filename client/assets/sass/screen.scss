@@ -207,6 +207,8 @@ main {
       }
       .waiting {
         color: $orange;
+      }
+      .waitingpulse {
         animation-duration: 1.8s;
         animation-iteration-count: infinite;
       }

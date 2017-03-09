@@ -37,7 +37,13 @@ function Game(started, ended) {
     this.started = started;
     this.ended = ended;
     this.players = [];
+    this.boxes = [];
+
 }
+
+Game.prototype.getPlayerById = function(id){
+    return this.players.find(function(player){return player.id === id});
+};
 
 function Player(id, name, health,htmlId) {
     this.id = id;
@@ -45,6 +51,7 @@ function Player(id, name, health,htmlId) {
     this.health = health;
     this.htmlId = htmlId;
 }
+
 
 Player.prototype.animateHealth = function (decrease, $target,currentGame) {
 
@@ -80,13 +87,26 @@ function Box(id) {
     this.src = 'images/item.svg';
     this.selected = false;
     this.id = id;
+    this.visible = true;
 
     this.addToHTML();
 }
 
 Box.prototype.animate = function () {
     this.$htmlelement.addClass('animateImg');
+    this.setVisibility();
     return this;
+};
+
+Box.prototype.setVisibility = function(){
+    var element = this;
+    setInterval(function(){
+        if(parseInt(element.$htmlelement.css('right').replace('px','')) > 840){
+            element.visible = false;
+        } else {
+            element.visible = true;
+        }
+    },500)
 };
 
 Box.prototype.addToHTML = function () {
@@ -99,7 +119,7 @@ Box.prototype.moveToStartPosition = function () {
     // this.$htmlelement.css('right','-95px').removeClass('animateImg').addClass('animateImg'); // This makes them turn around and go back, really cool and unexpected!
     this.$htmlelement.removeClass('animateImg');
     void this.$htmlelement[0].offsetWidth; // Some magic I found on https://css-tricks.com/restart-css-animation/
-    this.$htmlelement.addClass('animateImg');
+    this.$htmlelement.addClass('animateImg'); console.log('animation ended with position ' + this.$htmlelement.css('right'))
     return this;
 };
 
@@ -107,11 +127,8 @@ Box.prototype.moveToStartPosition = function () {
 
 var interfaceModule = (function () {
 
-    // Boxes collection
-    var boxes = [];
-
     var currentGame;
-    var lastProcessedTimestamp= 1489071463266;
+    var lastProcessedTimestamp= 0;
 
     var init = function () {
 
@@ -126,7 +143,7 @@ var interfaceModule = (function () {
                 $('#container').css('display', 'block').addClass('animated').addClass('slideInUp');
 
                 // Add message waiting for players
-                $('#vs .messages').html('<p class="waiting animated pulse">Waiting for players</p>');
+                $('#vs .messages').html('<p class="waiting waitingpulse animated pulse">Waiting for players</p>');
 
                 // Get game from server with all its info
                 getCurrentGame();
@@ -208,13 +225,17 @@ var interfaceModule = (function () {
     var initRound = function(){
         verbose.log(['--- INFO --- Initialising game',currentGame]);
 
+        //TODO: Should be called after ALL animations have ended - but that's a worry for later
         // Fade necessary boxes
-        $('.ready, .messages p').addClass('animated').addClass('fadeOut').on('animationend',function () {
+        $('.messages p').removeClass('waitingpulse').removeClass('pulse');
+        $('.ready, .messages p').addClass('animated').addClass('fadeOut');
+
+        $('.messages p').on('animationend',function () {
             $('.ready,.hurry').css('display','none');
             $('.messages p').remove();
 
             // Bring back the boxes
-            $('aside,.healthbar').css('display','block').addClass('animated').addClass('fadeInUp');
+            $('aside,.healthbar,.itemcollection').css('display','block').addClass('animated').addClass('fadeInUp');
             generateBoxes();
 
             showCountDown();
@@ -240,7 +261,7 @@ var interfaceModule = (function () {
                         // Find last action ID:
                         var index = actions.findIndex(function(action){return action.timestamp === lastProcessedTimestamp});
 
-                        index = (index<0 && actions.length === 0)?0:index;
+                        index = (index<0)?0:index;
 
                         // Do not splice when nothing was found or when it's the last processed item. Need to limit it like this due to splice's circular nature
                         if( (index> -1) && (index < actions.length -1) ){
@@ -248,7 +269,10 @@ var interfaceModule = (function () {
 
                             actions.forEach(function(action,actionIndex){
 
-                                console.log('Handling action ' + action.action + ' by player ' + action.player);
+                                verbose.log(['--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name]);
+
+                                // Now do something with them
+                                interfaceModule[action.action](action);
 
                                 lastProcessedTimestamp = action.timestamp;
 
@@ -259,7 +283,7 @@ var interfaceModule = (function () {
                                 }
                             });
                         } else { // TODO: figure out why it calls it twice... 
-                            console.log(['--- INFO --- Nothing new, repolling for new events']);
+                            verbose.log(['--- INFO --- Nothing new, repolling for new events']);
                             pollRound();
                         }
                 });
@@ -277,17 +301,17 @@ var interfaceModule = (function () {
 
     var generateBoxes = function () {
         for (var i = 0; i < config.amountOfBoxes; i++) {
-            boxes.push(new Box(i));
+            currentGame.boxes.push(new Box(i));
         }
 
         var index = 0;
         var movingBoxAnimation = setInterval(function () {
-            boxes[index].animate();
+            currentGame.boxes[index].animate();
 
             // Bind animation ended -> move to start position
-            boxes[index].$htmlelement.on('transitionend', function (escapedIndex) {
+            currentGame.boxes[index].$htmlelement.on('transitionend', function (escapedIndex) {
                 return function () {
-                    boxes[escapedIndex].moveToStartPosition.call(boxes[escapedIndex])
+                    currentGame.boxes[escapedIndex].moveToStartPosition.call(currentGame.boxes[escapedIndex])
                 }
             }(index)); // Escape the closure my sweeties!
 
@@ -300,6 +324,13 @@ var interfaceModule = (function () {
         }, 760);
 
     };
+    var getRandomBox = function(){
+        var randomIndex = helperFunctions.getRandomInt(0,currentGame.boxes.length -1);
+        var randomBox = currentGame.boxes[randomIndex];
+        if(!randomBox.visible){getRandomBox();}
+
+        return randomBox.$htmlelement;
+    };
 
     var selectItemBox = function (player, selectedBox) {
 
@@ -311,7 +342,7 @@ var interfaceModule = (function () {
 
         // Make a new box
 
-        $(selectedBox).attr('src', 'images/item-selected.svg').addClass('animated').addClass('zoomOutDown');
+        $(selectedBox).attr('src', 'images/item-selected.svg').addClass('animated').addClass('zoomOutDown').addClass('selected');
         itemSelectedAudio.play();
         addItemToPlayerCollection(player);
     };
@@ -351,10 +382,6 @@ var interfaceModule = (function () {
             animateHealth(10, $(this).siblings('.healthbar').find('.visible-bar'))
         });
 
-        // FAKE: click will always go to player 2
-        $('aside').on('click', ' .wrapper img', function (e) {
-            selectItemBox('#player2', $(this));
-        })
 
         // FAKE: take away animation from selectedItem
         $('#player2').on('click', function (e) {
@@ -369,8 +396,26 @@ var interfaceModule = (function () {
 
     };
 
+    /********  SPECIAL ACTION FUNCTIONS **********/
+
+        // I will need to turn these guys into promises, but that's a worry for tomorrow
+    var fetchAmmo = function(action){
+        selectItemBox('#'+currentGame.getPlayerById(action.player).htmlId, getRandomBox());
+    };
+
+    var fire = function(action){
+        console.log('fire  worked!')
+    };
+
+    var takeHit = function(action){console.log('takeHit worked!')}
+
+
+
     return {
-        init: init
+        init: init,
+        fetchAmmo: fetchAmmo,
+        fire: fire,
+        takeHit: takeHit
     }
 
 })();
@@ -410,7 +455,15 @@ var helperFunctions = (function () {
         };
     }
 
-    return {getTimeRemaining: getTimeRemaining};
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    return {
+        getTimeRemaining: getTimeRemaining,
+        getRandomInt: getRandomInt
+
+    };
 })();
 
 
