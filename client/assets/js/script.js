@@ -6,51 +6,6 @@ var criticalHealthAudio = new Audio('assets/media/music/low-health.mp3');
 var laserBeamAudio = new Audio('assets/media/music/laser-fired.mp3');
 var itemSelectedAudio = new Audio('assets/media/music/item-selected.mp3');
 
-var isPlaying = false;
-
-function Game(started, ended) {
-    this.started = started;
-    this.ended = ended;
-    this.players = [];
-}
-
-function Player(id, name, health) {
-    this.id = id;
-    this.name = name;
-    this.health = health;
-}
-
-function Box(id) {
-    this.src = 'images/item.svg';
-    this.selected = false;
-    this.id = id;
-
-    this.addToHTML();
-}
-
-Box.prototype.animate = function () {
-    // $('#item-' + this.id).addClass('animateImg');
-    this.$htmlelement.addClass('animateImg');
-    return this;
-};
-
-Box.prototype.addToHTML = function () {
-    $('aside .wrapper').append('<img src="' + this.src + '" alt="Collectible" title="Collectible" id="item-' + this.id + '" />');
-    this.$htmlelement = $('#item-' + this.id);
-    return this;
-};
-
-Box.prototype.moveToStartPosition = function () {
-    console.log(this);
-    // this.$htmlelement.css('right','-95px').removeClass('animateImg').addClass('animateImg'); // This makes them turn around and go back, really cool and unexpected!
-    this.$htmlelement.removeClass('animateImg');
-    void this.$htmlelement[0].offsetWidth; // Some magic I found on https://css-tricks.com/restart-css-animation/
-    this.$htmlelement.addClass('animateImg');
-    console.log('animation ended with position ' + this.$htmlelement.css('right'))
-
-    return this;
-};
-
 var config = {
     // Droids have 20 health points, we should receive this from the server ideally
     droidHealth: 20,
@@ -78,11 +33,50 @@ var config = {
 
 };
 
+function Game(started, ended) {
+    this.started = started;
+    this.ended = ended;
+    this.players = [];
+}
+
+function Player(id, name, health) {
+    this.id = id;
+    this.name = name;
+    this.health = health;
+}
+
+function Box(id) {
+    this.src = 'images/item.svg';
+    this.selected = false;
+    this.id = id;
+
+    this.addToHTML();
+}
+
+Box.prototype.animate = function () {
+    this.$htmlelement.addClass('animateImg');
+    return this;
+};
+
+Box.prototype.addToHTML = function () {
+    $('aside .wrapper').append('<img src="' + this.src + '" alt="Collectible" title="Collectible" id="item-' + this.id + '" />');
+    this.$htmlelement = $('#item-' + this.id);
+    return this;
+};
+
+Box.prototype.moveToStartPosition = function () {
+    // this.$htmlelement.css('right','-95px').removeClass('animateImg').addClass('animateImg'); // This makes them turn around and go back, really cool and unexpected!
+    this.$htmlelement.removeClass('animateImg');
+    void this.$htmlelement[0].offsetWidth; // Some magic I found on https://css-tricks.com/restart-css-animation/
+    this.$htmlelement.addClass('animateImg');
+    console.log('animation ended with position ' + this.$htmlelement.css('right'))
+
+    return this;
+};
+
+
 
 var interfaceModule = (function () {
-
-    // Precentage health not to have rounding issues
-    //var health = {player1: 100, player2: 100};
 
     // Boxes collection
     var boxes = [];
@@ -95,9 +89,7 @@ var interfaceModule = (function () {
 
         setTimeout(function () {
 
-            $('#splashscreen').addClass('animated').addClass('slideOutUp');
-
-            $('#splashscreen').on('animationend', function () {
+            $('#splashscreen').addClass('animated').addClass('slideOutUp').on('animationend', function () {
 
                 $('#splashscreen').css({'display': 'none'}); // because the animation library does not reset this property
 
@@ -111,18 +103,15 @@ var interfaceModule = (function () {
 
                 bindEvents(); // Will be removed in time
 
-
             });
 
         }, 1500); // Stick to 1500ms to allow for initial animation to finish
-
 
     };
 
     var getCurrentGame = function () {
 
         // IIFE to ensure scoping for poll() remains secure
-        // TODO: I should really clean this up.. not now though
         (function poll() {
             setTimeout(function () {
                 $.ajax({
@@ -137,40 +126,7 @@ var interfaceModule = (function () {
                     }
 
                     // Check for players
-                    response.players.forEach(function (player) {
-
-                            // Check if in Game.players already
-                            if (
-                                currentGame.players.find((p) => {
-                                    return p.id === player.id
-                                }) === undefined
-
-                            ) {
-                                // Add if not and consider it the first player
-                                currentGame.players.push(new Player(player.id, 'Player Name', player.health * config.healthFactor ));
-
-                                // Check how many players there are now
-                                if(currentGame.players.length === 1){
-                                    $('#player1 .ready').css('display', 'inline-block');
-                                    $('#player2 .hurry').show();
-                                } else {
-                                    // The second player has been added, move to the next screen
-                                    $('#player2 .hurry').hide();
-                                    $('#player2 .ready').css('display', 'inline-block');
-
-
-                                    // Start animation new screen
-                                    initGame();
-
-                                    // TODO: Can I break a function here so that poll() is not invoked later on? return just breaks me out of the foreach... or do I need to result to a for?
-                                    return;
-                                }
-
-                            } else { console.log('player already in array',player)}
-
-                        console.log("processed",player);
-
-                    });
+                    response.players.forEach(checkPlayerLogin(currentGame));
 
                     // Stop polling
                     (response.players.length === 2) ?
@@ -179,11 +135,41 @@ var interfaceModule = (function () {
 
                 });
 
-
             }, 2000);
         })();
+    };
 
+    var checkPlayerLogin = function(currentGame){
+        return function(player){
+            // Check if in Game.players already
+            if (
+                currentGame.players.find((p) => {
+                    return p.id === player.id
+                }) === undefined
 
+            ) {
+                // Add if not and consider it the first player
+                currentGame.players.push(new Player(player.id, 'Player Name', player.health * config.healthFactor ));
+
+                // Check how many players there are now
+                if(currentGame.players.length === 1){
+                    $('#player1 .ready').css('display', 'inline-block');
+                    $('#player2 .hurry').show();
+                } else {
+                    // The second player has been added, move to the next screen
+                    $('#player2 .hurry').hide();
+                    $('#player2 .ready').css('display', 'inline-block');
+
+                    // Start animation new screen
+                    initGame();
+
+                    // TODO: Can I break a function here so that poll() is not invoked later on? return just breaks me out of the foreach... or do I need to result to a for?
+                    return;
+                }
+
+            }
+            verbose.log(['--- INFO --- player processed'],player);
+        }
     };
 
     var initGame = function(){
