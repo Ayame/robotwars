@@ -1,7 +1,9 @@
+var debounce = require('debounce');
 var serialport = require('serialport');
 //var readline = require('readline');
 var WebSocketServer = require('ws').Server;
 var xbox = require('xbox-controller-node');
+var request = require('request');
 
 var portname = process.argv[2];
 
@@ -22,6 +24,8 @@ var SERVER_PORT = 8081;               // port number for the webSocket server
 var wss = new WebSocketServer({port: SERVER_PORT}); // the webSocket server
 var connections = new Array;          // list of connections to the server
 
+let playerID;
+
 
 myPort.on('open', onOpen);
 myPort.on('data', onrecieveData);
@@ -34,7 +38,7 @@ function handleConnection(client) {
 	console.log("New Connection"); // you have a new client
 	connections.push(client); // add this client to the connections array
 
-	client.on('message', sendData); // when a client sends a message,
+	client.on('message', sendDataBluetooth); // when a client sends a message,
 
 	client.on('close', function() { // when a client closes its connection
 	console.log("connection closed"); // print it out
@@ -55,9 +59,13 @@ function onrecieveData(data)
 		connections[myConnection].send(data); // send the data to each connection
 	 }
 	console.log("Received data: " + data);
+	if(data = 'HIT')
+	{
+		 sendDataServer('/game/0/player/' + playerID + '/hit', 'POST');
+	}
 }
 
-function sendData(data)
+function sendDataBluetooth(data)
 {
 	console.log("sending to serial: " + data);
 	myPort.write("");
@@ -65,66 +73,74 @@ function sendData(data)
 	myPort.write("\n");
 }
 
+function sendDataServer(data, method)
+{
+	
+	var url = 'http://localhost:3000' + data;
+	// Set the headers
+	var headers = {
+		'User-Agent':       'Super Agent/0.0.1',
+		'Content-Type':     'application/x-www-form-urlencoded'
+	}
+
+	// Configure the request
+	var options = {
+		url: url,
+		method: method,
+		headers: headers,
+	}
+
+	console.log(url);
+	// Start the request
+	request(options, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			// Print out the response body
+			var obj = JSON.parse(body);
+			
+			if(obj.action == 'identifyPlayer')
+			{
+				playerID = obj.result.id;
+			}
+		}
+	});
+}
+
 function showError(error) 
 {
    console.log('Serial port error: ' + error);
 }
 
+//use of the xbox gamepad instead of web cliënt controller
+xbox.on('error', showError);
+xbox.on('a',debounce( function () {
+  sendDataBluetooth('f');
+  sendDataServer('/game/0/player/' + playerID + '/ammo', 'GET');
+}));
 
-//use of the xbox gamepad instead of web cliÃ«nt controller
-xbox.on('a', function () {
-  console.log('[A] button press');
-  sendData("FIRE");
-});
+xbox.on('x',debounce( function () {
+   sendDataServer('/game/0/player/' + playerID + '/ammo', 'POST');
+}));
 
-xbox.on('x', function () {
-  console.log('[X] button press');
-  sendData("GETAMMO");
-});
-  
-xbox.on('start', function () {
-  console.log('[Start] button press');
-  sendData("LOGIN");
-});
- 
-//Manage sticks events 
- 
-xbox.on('leftstickLeft', function () {
-  console.log('Moving [LEFTSTICK] LEFT');
-  sendData("left");
-});
- 
-xbox.on('leftstickLeft:release', function () {
-  console.log('Released [LEFTSTICK] LEFT');
-  sendData("stopMotor");
-});
- 
-xbox.on('leftstickRight', function () {
-  console.log('Moving [LEFTSTICK] RIGHT');
-  sendData("right");
-});
- 
-xbox.on('leftstickRight:release', function () {
-  console.log('Released [LEFTSTICK] RIGHT');
-  sendData("stopMotor");
-})
- 
-xbox.on('leftstickDown', function () {
-  console.log('Moving [LEFTSTICK] DOWN');
-  sendData("backwards");
-});
- 
-xbox.on('leftstickUp', function () {
-  console.log('Moving [LEFTSTICK] UP');
-  sendData("forward");
-});
+xbox.on('b',debounce( function () {
+  sendDataBluetooth('s');
+}));
 
-xbox.on('leftstickUp:release', function () {
-  console.log('Moving [LEFTSTICK] UP');
-  sendData("stopMotor");
-});
+xbox.on('start',debounce( function () {
+  sendDataServer('/game/0/player', 'POST');
+}));
 
-xbox.on('leftstickDown:release', function () {
-  console.log('Moving [LEFTSTICK] UP');
-  sendData("stopMotor");
-});
+xbox.on('up',debounce( function () {
+  sendDataBluetooth('d');
+}));
+
+xbox.on('down',debounce( function () {
+  sendDataBluetooth('b');
+}));
+
+xbox.on('left',debounce( function () {
+  sendDataBluetooth('l');
+}));
+
+xbox.on('right',debounce( function () {
+  sendDataBluetooth('r');
+}));

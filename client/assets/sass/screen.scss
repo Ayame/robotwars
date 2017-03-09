@@ -45,6 +45,9 @@ $orange: #FF8D00;
 /**********************/
 /*  GENERAL ELEMENTS  */
 /**********************/
+html, body {
+  height: 100%;
+}
 
 body {
   font-size: 1.125rem;
@@ -69,6 +72,20 @@ h1 {
   overflow: hidden;
   white-space: nowrap;
 }
+/*************************/
+/*     SPLASH SCREEN     */
+/*************************/
+
+#splashscreen {
+  height: 100%;
+  h1 {
+    background-position: center top;
+    width: auto;
+    height: 100%;
+    background-size: auto;
+  }
+}
+
 
 /*************************/
 /*  CONTAINING ELEMENTS  */
@@ -77,6 +94,7 @@ h1 {
 #container {
   width: 960px;
   @include blockcenter();
+  display: none;
 }
 footer {
   color: #525252;
@@ -103,7 +121,7 @@ aside {
   border-radius: 12px;
   min-height: 86px;
   position: relative;
-  margin-bottom: 50px;
+  display: none;
   .wrapper {
     overflow: hidden;
     position: relative;
@@ -154,6 +172,7 @@ aside {
 main {
   display: flex;
   flex-direction: row;
+  margin-top: 50px;
   #player1, #player2 {
     width: 200px;
     align-self: flex-end;
@@ -186,6 +205,11 @@ main {
       .player2 {
         color: $red
       }
+      .waiting {
+        color: $orange;
+        animation-duration: 1.8s;
+        animation-iteration-count: infinite;
+      }
     }
   }
 
@@ -200,6 +224,7 @@ main {
   .healthbar {
     position: relative;
     margin-bottom: 10%;
+    display: none;
     .wrapper {
       @include blockcenter();
       border: 2px solid $green;
@@ -234,7 +259,7 @@ main {
     background-color: $bordeaux;
   }
 
-  .critical {
+  .critical, .hurry {
     color: $orange;
     visibility: hidden;
     animation-duration: 0.5s;
@@ -245,9 +270,27 @@ main {
     }
 
   }
+  /* Because: alignment */
+  .hurry {
+    display: none;
+    visibility: visible;
+  }
+  .ready {
+    border: 4px double $green;
+    color: $green;
+    padding: 6px;
+    border-radius: 15px;
+    display: inline-block;
+    display: none;
+  }
+  #player2 .ready {
+    border-color: $red;
+    color: $red;
+  }
 
   .itemcollection {
     font-size: 1rem;
+    display: none;
     h3 {
       display: inline-block;
       font-size: 1rem; line-height: 20px;
@@ -331,6 +374,10 @@ main .healthbar {
   0% {background-color: transparent}
   50% {background-color: white}
   100% { background-color: transparent}
+}
+
+@keyframes gentlePulse {
+
 }
 
 

@@ -2,31 +2,31 @@ var socket;
 
 $(document).keydown(function(e){
     if (e.keyCode == 37) { 
-		socket.send("left");
+		socket.send("l");
 		return false;
     }
 	if (e.keyCode == 38) { 
-       socket.send("forward");
+       socket.send("d");
        return false;
     }
 	
 	if (e.keyCode == 39) { 
-		socket.send("right");
+		socket.send("r");
        return false;
     }
 	
     if (e.keyCode == 40) { 
-		socket.send("backwards");
+		socket.send("b");
        return false;
     }
 
 	if (e.keyCode == 32) { 
-		socket.send("FIRE");
+		socket.send("f");
        return false;
     }
 	
 	if (e.keyCode == 13) { 
-		socket.send("stopMotor");
+		socket.send("s");
        return false;
     }
 
@@ -69,30 +69,30 @@ $(document).ready(function(){
 
 	$("#UP").on("click", function(e){
     e.preventDefault();
-		socket.send("forward");
+		socket.send("d");
 	});
 
 	$("#DOWN").on("click", function(e){
     e.preventDefault();
-		socket.send("backwards");
+		socket.send("b");
 	});
 
 
 	$("#LEFT").on("click", function(e){
     e.preventDefault();
-		socket.send("left");
+		socket.send("l");
 	});
 
 
 	$("#RIGHT").on("click", function(e){
     e.preventDefault();
-		socket.send("right");
+		socket.send("r");
 	});
 
 
 	$("#A").on("click", function(e){
     e.preventDefault();
-		socket.send("FIRE");
+		socket.send("f");
 	});
 
 
@@ -103,7 +103,7 @@ $(document).ready(function(){
 
 	$("#select").on("click", function(e){
     e.preventDefault();
-		socket.send("stopMotor");
+		socket.send("s");
 	});
 	
 	$("#start").on("click", function(e){
@@ -115,7 +115,4 @@ $(document).ready(function(){
 	}
 		
 	});
-	
-	
-	
 });
