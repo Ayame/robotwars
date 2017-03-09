@@ -141,7 +141,6 @@ var interfaceModule = (function () {
     };
 
     var getCurrentGame = function () {
-
         // IIFE to ensure scoping for poll() remains secure
         (function poll() {
             setTimeout(function () {
@@ -197,7 +196,7 @@ var interfaceModule = (function () {
                     $('#player2 .ready').css('display', 'inline-block');
 
                     // Start animation new screen
-                    initGame();
+                    initRound();
 
                     // TODO: Can I break a function here so that poll() is not invoked later on? return just breaks me out of the foreach... or do I need to result to a for?
                     return;
@@ -207,7 +206,7 @@ var interfaceModule = (function () {
         }
     };
 
-    var initGame = function(){
+    var initRound = function(){
         verbose.log(['--- INFO --- Initialising game',currentGame]);
 
         // Fade necessary boxes
@@ -220,12 +219,32 @@ var interfaceModule = (function () {
             generateBoxes();
 
             showCountDown();
+            pollForChanges();
         });
 
         // Yeah yeah can be optimised for more players but not now
          fillOutHealth($('#player1 .healthbar h3 span'),currentGame.players[0].health);
          fillOutHealth($('#player2 .healthbar h3 span'),currentGame.players[1].health);
 
+    };
+
+    var pollForChanges = function(){
+        // IIFE for scope
+        (function poll() {
+            setTimeout(function () {
+                $.ajax({
+                    url: config.serverUrl + '/game/' + config.gameId,
+                    method: 'GET',
+                    dataType: 'json'
+                }).done(function (response) {
+
+                    console.log(response);
+                        poll();
+
+                });
+
+            }, 1000);
+        })();
     };
 
     var showCountDown = function () {
