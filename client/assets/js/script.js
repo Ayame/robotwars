@@ -129,6 +129,7 @@ var interfaceModule = (function () {
 
     var currentGame;
     var lastProcessedTimestamp= 0;
+    var firstActionsLoad = true;
 
     var init = function () {
 
@@ -261,10 +262,13 @@ var interfaceModule = (function () {
                         // Find last action ID:
                         var index = actions.findIndex(function(action){return action.timestamp === lastProcessedTimestamp});
 
-                        index = (index<0)?0:index;
 
                         // Do not splice when nothing was found or when it's the last processed item. Need to limit it like this due to splice's circular nature
-                        if( (index> -1) && (index < actions.length -1) ){
+                        //if( ((index> -1) && (index < actions.length -1)) || (firstActionsLoad)){
+                        if( (firstActionsLoad && actions.length>0) || (index !== actions.length - 1 && firstActionsLoad === false) ){
+                            index = (firstActionsLoad)?0:index;
+                            firstActionsLoad = false;
+
                             actions = actions.splice(index);
 
                             actions.forEach(function(action,actionIndex){
@@ -399,7 +403,7 @@ var interfaceModule = (function () {
     /********  SPECIAL ACTION FUNCTIONS **********/
 
         // I will need to turn these guys into promises, but that's a worry for tomorrow
-    var fetchAmmo = function(action){
+    var fetchAmmo = function(action){ console.log('AMMO FOR' + currentGame.getPlayerById(action.player).htmlId);
         selectItemBox('#'+currentGame.getPlayerById(action.player).htmlId, getRandomBox());
     };
 
