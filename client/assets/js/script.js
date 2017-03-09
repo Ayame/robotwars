@@ -100,8 +100,6 @@ Box.prototype.moveToStartPosition = function () {
     this.$htmlelement.removeClass('animateImg');
     void this.$htmlelement[0].offsetWidth; // Some magic I found on https://css-tricks.com/restart-css-animation/
     this.$htmlelement.addClass('animateImg');
-    console.log('animation ended with position ' + this.$htmlelement.css('right'))
-
     return this;
 };
 
@@ -113,6 +111,7 @@ var interfaceModule = (function () {
     var boxes = [];
 
     var currentGame;
+    var lastProcessedTimestamp= 1489071463266;
 
     var init = function () {
 
@@ -230,20 +229,42 @@ var interfaceModule = (function () {
 
     var pollForChanges = function(){
         // IIFE for scope
-        (function poll() {
+        (function pollRound() {
             setTimeout(function () {
                 $.ajax({
                     url: config.serverUrl + '/game/' + config.gameId,
                     method: 'GET',
                     dataType: 'json'
                 }).done(function (response) {
+                        var actions = response.logs;
+                        // Find last action ID:
+                        var index = actions.findIndex(function(action){return action.timestamp === lastProcessedTimestamp});
 
-                    console.log(response);
-                        poll();
+                        index = (index<0 && actions.length === 0)?0:index;
 
+                        // Do not splice when nothing was found or when it's the last processed item. Need to limit it like this due to splice's circular nature
+                        if( (index> -1) && (index < actions.length -1) ){
+                            actions = actions.splice(index);
+
+                            actions.forEach(function(action,actionIndex){
+
+                                console.log('Handling action ' + action.action + ' by player ' + action.player);
+
+                                lastProcessedTimestamp = action.timestamp;
+
+                                // continue polling when last item has finished - put in the loop to ensure all other items have been processed
+                                if(actionIndex === actions.length -1){
+                                    console.log(['--- INFO --- Final element in queue, repolling for new events']);
+                                    pollRound();
+                                }
+                            });
+                        } else { // TODO: figure out why it calls it twice... 
+                            console.log(['--- INFO --- Nothing new, repolling for new events']);
+                            pollRound();
+                        }
                 });
 
-            }, 1000);
+            }, 2000);
         })();
     };
 
