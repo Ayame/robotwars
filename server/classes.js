@@ -10,7 +10,7 @@ function Game() {
 }
 
 Game.prototype.log = function(data){
-    data.timestamp = new Date();
+    data.timestamp = new Date().getTime();
     this.logs.push(data);
 }
 
@@ -40,19 +40,10 @@ Game.prototype.createPlayer = function(name){
     return p;
 };
 
-Game.prototype.getPlayer = function(id){
-    if (isInt(id))
-    {
-        return this.players[id];
-    }
-    else
-    {
-        return this.players.find(p=>p.id===id);
-    }
-};
-
-Game.prototype.deletePlayer = function(id){
-    delete this.players[id];
+Game.prototype.getPlayer = function(id) {
+    return (isInt(id) && this.players[id])    ||
+           this.players.find(p=>p.id===id)    ||
+           this.players.find(p=>p.name===id);
 };
 
 Game.prototype.getNextAvailablePlayer = function(name)
