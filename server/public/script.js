@@ -14,7 +14,7 @@ function fail(data){
 }
 
 function registerPlayer(gameId){
-    $.post( makeUrl(gameId)+"/player", success).fail(fail);
+    $.post( makeUrl(gameId)+"/player", {}, success).fail(fail);
 }
 
 function requestAmmo(gameId,playerId){
