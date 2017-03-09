@@ -169,7 +169,7 @@ var interfaceModule = (function () {
 
                     if (typeof currentGame === 'undefined') {
                         currentGame = new Game(response.started, response.ended);
-                        verbose.log(['--- INFO --- Created a new game',currentGame])
+                        verbose.log('--- INFO --- Created a new game',currentGame)
                     }
 
                     // Check for players
@@ -177,7 +177,7 @@ var interfaceModule = (function () {
 
                     // Stop polling
                     (response.players.length === 2) ?
-                            verbose.log(['--- INFO --- Stopped polling for players']) :
+                            verbose.log('--- INFO --- Stopped polling for players') :
                             poll();
 
                 });
@@ -201,7 +201,7 @@ var interfaceModule = (function () {
                                                     player.health * config.healthFactor,
                                                     'player'+(currentGame.players.length + 1) ));
 
-                verbose.log(['--- INFO --- player processed',player.name]);
+                verbose.log('--- INFO --- player processed',player.name);
 
                 // Check how many players there are now
                 if(currentGame.players.length === 1){
@@ -224,7 +224,7 @@ var interfaceModule = (function () {
     };
 
     var initRound = function(){
-        verbose.log(['--- INFO --- Initialising game',currentGame]);
+        verbose.log('--- INFO --- Initialising game',currentGame);
 
         //TODO: Should be called after ALL animations have ended - but that's a worry for later
         // Fade necessary boxes
@@ -266,14 +266,14 @@ var interfaceModule = (function () {
                         // Do not splice when nothing was found or when it's the last processed item. Need to limit it like this due to splice's circular nature
                         //if( ((index> -1) && (index < actions.length -1)) || (firstActionsLoad)){
                         if( (firstActionsLoad && actions.length>0) || (index !== actions.length - 1 && firstActionsLoad === false) ){
-                            index = (firstActionsLoad)?0:index;
+                            index = (firstActionsLoad)?0:index+1;
                             firstActionsLoad = false;
 
                             actions = actions.splice(index);
 
                             actions.forEach(function(action,actionIndex){
 
-                                verbose.log(['--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name]);
+                                verbose.log('--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name);
 
                                 // Now do something with them
                                 interfaceModule[action.action](action);
@@ -287,7 +287,7 @@ var interfaceModule = (function () {
                                 }
                             });
                         } else { // TODO: figure out why it calls it twice... 
-                            verbose.log(['--- INFO --- Nothing new, repolling for new events']);
+                            verbose.log('--- INFO --- Nothing new, repolling for new events');
                             pollRound();
                         }
                 });
@@ -361,9 +361,11 @@ var interfaceModule = (function () {
         $('#item-3').attr('src', 'images/item.svg');
         removeItemFromPlayerCollection(player);
     };
-    var fireItem = function (player) {
+    var fireItem = function (action) {
+        var player = currentGame.getPlayerById(action.player).htmlId;
+
         // Need to receive item type from server
-        $('.messages').html('<p class="' + player.substr(1) + '">' + $(player).find('figcaption').text() + ' fired a <span>3</span> damage <span>bullet</span>!</p>').show().addClass('animated').addClass('flash');
+        $('.messages').html('<p class="' + player + '">' + $('#'+player).find('figcaption').text() + ' fired a <span>'+ action.value.hit +'</span> damage <span>bullet</span>!</p>').show().addClass('animated').addClass('flash');
         laserBeamAudio.play();
     };
     var removeItemFromPlayerCollection = function (player) {
@@ -390,7 +392,7 @@ var interfaceModule = (function () {
         // FAKE: take away animation from selectedItem
         $('#player2').on('click', function (e) {
             unselectItemBox('#player2');
-            fireItem('#player2');
+
         })
     };
 
@@ -403,15 +405,20 @@ var interfaceModule = (function () {
     /********  SPECIAL ACTION FUNCTIONS **********/
 
         // I will need to turn these guys into promises, but that's a worry for tomorrow
-    var fetchAmmo = function(action){ console.log('AMMO FOR' + currentGame.getPlayerById(action.player).htmlId);
+    var fetchAmmo = function(action){
+        verbose.log('%c --- AMMO --- for ' + currentGame.getPlayerById(action.player).htmlId,'background: #222; color: #bada55');
         selectItemBox('#'+currentGame.getPlayerById(action.player).htmlId, getRandomBox());
     };
 
     var fire = function(action){
-        console.log('fire  worked!')
+        verbose.log('%c --- FIRE --- for ' + currentGame.getPlayerById(action.player).htmlId,'background: #F00; color: #FFF');
+        fireItem(action);
     };
 
-    var takeHit = function(action){console.log('takeHit worked!')}
+    var takeHit = function(action){
+        verbose.log('%c --- HIT --- for ' + currentGame.getPlayerById(action.player).htmlId,'background: #0FF; color: #FFF');
+        console.log('takeHit worked!')
+    }
 
 
 
@@ -431,12 +438,11 @@ var dataRetriever = (function () {
 
 
 var verbose = (function(logger){
-// TO DO: deftig met call en args doen
-    var log = function(message){
+    var log = function(){
         if(config.verbose){
-            logger.log(message)
+            logger.log.apply(logger,arguments);
         }
-    }
+    };
     return {
         log: log
     }
