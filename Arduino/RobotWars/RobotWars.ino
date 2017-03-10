@@ -19,7 +19,6 @@ void setup()
   pinMode(EN,OUTPUT);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
-
   
   pinMode(ENB,OUTPUT);
   pinMode(IN3,OUTPUT);
@@ -30,7 +29,7 @@ void setup()
   pinMode(outputIR, OUTPUT);
   
   Serial.begin(9600);  //local Serial Monitor
-  Serial1.begin(9600);  //bluetooth Serial Monitor
+  Serial1.begin(115200);  //bluetooth Serial Monitor
 
     //set speed
   analogWrite(EN,255);

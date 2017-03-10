@@ -3,12 +3,21 @@ var serialport = require('serialport');
 //var readline = require('readline');
 var WebSocketServer = require('ws').Server;
 var xbox = require('xbox-controller-node');
+var ds = require("dualshock")
+//var ps = ds.open(device, {smoothAnalog:10, smoothMotion:15, joyDeadband:4, moveDeadband:4});
+
+var ps = dualShock({
+    analogStickSmoothing: false,
+    config: "dualShock3",
+    logging: true
+});
+	
 var request = require('request');
 
 var portname = process.argv[2];
 
 var myPort = new serialport(portname, {
-	bauttRate: 9600,
+	bauttRate: 115200,
 	parser:serialport.parsers.readline("\r\n")
 })
 
@@ -25,7 +34,6 @@ var wss = new WebSocketServer({port: SERVER_PORT}); // the webSocket server
 var connections = new Array;          // list of connections to the server
 
 let playerID;
-
 
 myPort.on('open', onOpen);
 myPort.on('data', onrecieveData);
@@ -112,6 +120,7 @@ function showError(error)
 
 //use of the xbox gamepad instead of web cliënt controller
 xbox.on('error', showError);
+
 xbox.on('a',debounce( function () {
   sendDataBluetooth('f');
   sendDataServer('/game/0/player/' + playerID + '/ammo', 'GET');
@@ -142,5 +151,41 @@ xbox.on('left',debounce( function () {
 }));
 
 xbox.on('right',debounce( function () {
+  sendDataBluetooth('r');
+}));
+
+//use of the PlayStation gamepad instead of web cliënt controller
+ps.on('error', showError);
+
+ps.on('square:press',debounce( function () {
+  sendDataBluetooth('f');
+  sendDataServer('/game/0/player/' + playerID + '/ammo', 'GET');
+}));
+
+ps.on('x:press',debounce( function () {
+   sendDataServer('/game/0/player/' + playerID + '/ammo', 'POST');
+}));
+
+ps.on('circle:press',debounce( function () {
+  sendDataBluetooth('s');
+}));
+
+ps.on('start:press',debounce( function () {
+  sendDataServer('/game/0/player', 'POST');
+}));
+
+ps.on('dpadup:press',debounce( function () {
+  sendDataBluetooth('d');
+}));
+
+ps.on('dpaddown:press',debounce( function () {
+  sendDataBluetooth('b');
+}));
+
+ps.on('dpadleft:press',debounce( function () {
+  sendDataBluetooth('l');
+}));
+
+ps.on('dpadright:press',debounce( function () {
   sendDataBluetooth('r');
 }));
