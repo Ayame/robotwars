@@ -79,11 +79,13 @@ Player.prototype.log = function(data){
 }
 
 Player.prototype.fetchAmmo = function() {
-    this.ammo = Ammo.dequeue();
-    this.log({
-        action : "fetchAmmo",
-        value  : this.ammo
-    });
+    if (!this.ammo) {
+        this.ammo = Ammo.dequeue();
+        this.log({
+            action : "fetchAmmo",
+            value  : this.ammo
+        });
+    }
 }
 
 Player.prototype.takeHit = function(ammo)
@@ -112,12 +114,14 @@ Player.prototype.hit = function(player)
 };
 
 Player.prototype.fire = function(){
-    this.shotAmmo = this.ammo;
-    this.ammo = null;
-    this.log({
-        action : "fire",
-        value  : this.shotAmmo
-    });
+    if (this.ammo) {
+        this.shotAmmo = this.ammo;
+        this.ammo = null;
+        this.log({
+            action : "fire",
+            value  : this.shotAmmo
+        });
+    }
 }
 
 function Ammo(hit) {
