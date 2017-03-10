@@ -1,9 +1,6 @@
 var debounce = require('debounce');
 var serialport = require('serialport');
-//var readline = require('readline');
 var WebSocketServer = require('ws').Server;
-var xbox = require('xbox-controller-node');
-var ds = require("dualshock")
 	
 var request = require('request');
 
@@ -14,15 +11,8 @@ var myPort = new serialport(portname, {
 	parser:serialport.parsers.readline("\r\n")
 })
 
-/* use readline for testing without webservice from the console
 
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-*/
-
-var SERVER_PORT = 8081;               // port number for the webSocket server
+var SERVER_PORT = 8082;               // port number for the webSocket server
 var wss = new WebSocketServer({port: SERVER_PORT}); // the webSocket server
 var connections = new Array;          // list of connections to the server
 
@@ -39,7 +29,7 @@ function handleConnection(client) {
 	console.log("New Connection"); // you have a new client
 	connections.push(client); // add this client to the connections array
 
-	client.on('message', sendDataBluetooth); // when a client sends a message,
+	client.on('message', sendData); // when a client sends a message,
 
 	client.on('close', function() { // when a client closes its connection
 	console.log("connection closed"); // print it out
@@ -64,6 +54,27 @@ function onrecieveData(data)
 	{
 		 sendDataServer('/game/0/player/' + playerID + '/hit', 'POST');
 	}
+}
+
+function sendData(data)
+{
+	if(data == "LOGIN")
+	{
+		sendDataServer('/game/0/player', 'POST');
+	}
+	
+	if(data == "GETAMMO")
+	{
+		 sendDataServer('/game/0/player/' + playerID + '/ammo', 'POST');
+	}
+	
+	if(data == "f")
+	{
+		sendDataBluetooth('f');
+		sendDataServer('/game/0/player/' + playerID + '/ammo', 'GET');
+	}
+
+	
 }
 
 function sendDataBluetooth(data)
@@ -110,39 +121,3 @@ function showError(error)
 {
    console.log('Serial port error: ' + error);
 }
-
-//use of the xbox gamepad instead of web cliënt controller
-xbox.on('error', showError);
-
-xbox.on('a',debounce( function () {
-  sendDataBluetooth('f');
-  sendDataServer('/game/0/player/' + playerID + '/ammo', 'GET');
-}));
-
-xbox.on('x',debounce( function () {
-   sendDataServer('/game/0/player/' + playerID + '/ammo', 'POST');
-}));
-
-xbox.on('b',debounce( function () {
-  sendDataBluetooth('s');
-}));
-
-xbox.on('start',debounce( function () {
-  sendDataServer('/game/0/player', 'POST');
-}));
-
-xbox.on('up',debounce( function () {
-  sendDataBluetooth('d');
-}));
-
-xbox.on('down',debounce( function () {
-  sendDataBluetooth('b');
-}));
-
-xbox.on('left',debounce( function () {
-  sendDataBluetooth('l');
-}));
-
-xbox.on('right',debounce( function () {
-  sendDataBluetooth('r');
-}));
