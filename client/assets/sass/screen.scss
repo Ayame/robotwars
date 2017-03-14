@@ -11,6 +11,7 @@ $red: #F9001E;
 $bordeaux: #BC0625;
 $blue: #22A4E7;
 $orange: #FF8D00;
+$yellow: #FBF200;
 
 .cf:before, .cf:after {
   content: "";
@@ -104,7 +105,7 @@ footer {
   position: absolute;
   bottom: 20px;
   width: 100%;
-  text-align: center;
+  line-height: 150%;
   a {
     color: #525252;
     &:hover {
@@ -122,6 +123,7 @@ aside {
   min-height: 86px;
   position: relative;
   display: none;
+  margin-bottom: 40px;
   .wrapper {
     overflow: hidden;
     position: relative;
@@ -168,11 +170,19 @@ aside {
 /*************************/
 /*     FIGHTING AREA     */
 /*************************/
+.finishhim {
+  font-size: 4rem;
+  letter-spacing: 4px;
+  color: $orange;
+  text-align: center;
+  display: none;
+}
 
 main {
   display: flex;
   flex-direction: row;
   margin-top: 50px;
+  position: relative;
   #player1, #player2 {
     width: 200px;
     align-self: flex-end;
@@ -180,6 +190,7 @@ main {
 
     letter-spacing: 2px;
   }
+
 
   #vs {
     flex-grow: 4;
@@ -196,6 +207,7 @@ main {
       color: $blue;
       transform: rotate(-17deg);
     }
+
     .messages {
       letter-spacing: 2px;
       animation-duration: 0.4s;
@@ -217,6 +229,8 @@ main {
 
   figure {
     margin-bottom: 6%;
+    position: relative;
+    left:0;
     figcaption {
       margin-top: 4%;
     }
@@ -339,6 +353,34 @@ main {
 
 }
 
+#gameover {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  text-align: center;
+  font-size: 4rem;
+  letter-spacing: 4px;
+  background-color: rgba(0,0,0,0.8);
+  height: 70%;
+  padding: 10px;
+  border: 3px rgba(188,6,37,0.4) dashed;
+  display: none;
+  /* Flexbox horizontal and vertical center */
+  align-items: center;
+  justify-content: center;
+  h2 {
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+  p {
+    font-size: 3rem;
+  }
+  .player1 {color: $green}
+  .player2 {color: $red}
+}
+
 /*************************/
 /*       ANIMATIONS      */
 /*************************/
@@ -389,8 +431,29 @@ main .healthbar {
 
 }
 
-
 aside .animateImg {
   right: 960px;
   transition: right 10s linear;
+}
+
+main #player2 .movetokill {
+  left: -565px;
+  transition: left 0.4s ease-out;
+}
+
+main #player1 .movetokill {
+  left: 565px;
+  transition: left 0.4s ease-out;
+}
+
+main #player1 .killed {
+  transform: rotate(-90deg);
+  transform-origin: bottom left;
+  transition: transform 0.3s linear;
+}
+
+main #player2 .killed {
+  transform: rotate(90deg);
+  transform-origin: bottom right;
+  transition: transform 0.3s linear;
 }

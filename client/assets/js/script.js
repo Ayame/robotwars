@@ -6,6 +6,8 @@ var criticalHealthAudio = new Audio('assets/media/music/low-health.mp3');
 var laserBeamAudio = new Audio('assets/media/music/laser-fired.mp3');
 var itemSelectedAudio = new Audio('assets/media/music/item-selected.mp3');
 var hitAudio = new Audio('assets/media/music/hit.mp3');
+var finishHimAudio = new Audio('assets/media/music/finishhim.mp3');
+var tumDumAudio = new Audio('assets/media/music/tum-dum-dum.mp3');
 
 var config = {
     // Droids have 20 health points, we should receive this from the server ideally
@@ -54,13 +56,15 @@ function Player(id, name, health,htmlId) {
     this.htmlId = htmlId;
 }
 
-
-Player.prototype.animateHealth = function (decrease, $target,currentGame) {
+Player.prototype.animateHealth = function (decrease, $target,currentGame,damageDealer) {
 
     var $parent = $target.closest('.healthbar').parent();
     var playerIndex = parseInt($parent.attr('id').replace('player','')) - 1;
-    currentGame.players[playerIndex].health -= decrease / 200 * 100;
+    //currentGame.players[playerIndex].health -= decrease / (config.droidHealth * 10) * 100;
+    currentGame.players[playerIndex].health -= decrease; // health x/20, not percentage
     this.fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), currentGame.players[playerIndex].health);
+
+    verbose.log('%c --- NEW HEALTH --- for ' + currentGame.players[playerIndex].name + ' is ' + currentGame.players[playerIndex].health,'background: #47cbf6; color: #FFF');
 
     var newWidth = $target.width() - decrease;
     $target.animate({width: newWidth}, 150, 'linear');
@@ -76,20 +80,42 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame) {
         $figure.removeClass('hit');
     });
 
+    // TEMP OVERRIDE
+    criticalWidth = -1;
+
     if (criticalWidth < config.criticalHealth) {
 
         $parent.children('.critical').css('visibility', 'visible');
         criticalHealthAudio.play();
 
-        console.log('WARNING: ' + $parent.attr('id') + ' is in critical condition!')
+        verbose.log('%c --- CRITICAL CONDITION --- for ' + $parent.attr('id'),'background: #f97100; color: #FFF');
+
     }
     if (criticalWidth < 0) {
 
         $parent.children('.critical').css('visibility', 'hidden');
         criticalHealthAudio.pause();
+        finishHimAudio.play();
+
         this.fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
 
-        // Trigger "died" event here
+        // Finish him Animation first -> followed by game over screen
+
+        // Hide unnecessary boxes for focus
+        $('#vs,.itemcollection').addClass('animated').addClass('fadeOut');
+
+        $('.finishhim').css('display','block').addClass('animated').addClass('bounceInUp').on('animationend',function(){
+            $('#' + currentGame.players[damageDealer].htmlId + ' figure').addClass('movetokill').on('transitionend',function(){
+                $('#' + currentGame.players[playerIndex].htmlId + ' figure').addClass('killed').on('transitionend',function(){
+                    tumDumAudio.play();
+                    $('.finishhim,.healthbar').addClass('fadeOut');
+
+                    // Show game over screen here
+                    $('#gameover').css('display','flex').addClass('animate').addClass('slideInDown').find('p').addClass(currentGame.players[damageDealer].htmlId).children('strong').text(currentGame.players[damageDealer].name);
+
+                });
+            });
+        });
 
     }
 };
@@ -163,8 +189,6 @@ var interfaceModule = (function () {
 
                 // Get game from server with all its info
                 getCurrentGame();
-
-                bindEvents(); // Will be removed in time
 
             });
 
@@ -394,24 +418,6 @@ var interfaceModule = (function () {
     };
 
 
-    var bindEvents = function () {
-        // listen to incoming stuff
-
-        // fake some stuff for now
-
-        // BEWARE::: when clicking make sure the animation has finished before clicking again,
-        // otherwise the numbers won't add up
-        // Naturally this will be irrelevant in the "live" version with incoming server data
-        // FAKE: click -> needs to be modified with event from webserver
-        $('main').on('click', 'figure',function (e) {
-            animateHealth(10, $(this).siblings('.healthbar').find('.visible-bar'))
-        });
-
-
-
-    };
-
-
     /********  SPECIAL ACTION FUNCTIONS **********/
 
         // I will need to turn these guys into promises, but that's a worry for tomorrow
@@ -428,8 +434,9 @@ var interfaceModule = (function () {
 
     var takeHit = function(action){
         var currentPlayer = currentGame.getPlayerById(action.player);
+        var damageDealer = (currentPlayer.htmlId === 'player1')?1:0; // Ok this is really bad, but ideally the server would send who dealt the damage I am now passing the index in the array
         verbose.log('%c --- HIT --- for ' + currentPlayer.htmlId + ' with ' + action.value + ' damage','background: #0FF; color: #FFF');
-        currentPlayer.animateHealth(action.value * config.healthFactor, $('#'+currentPlayer.htmlId + ' figure').siblings('.healthbar').find('.visible-bar'),currentGame);
+        currentPlayer.animateHealth(action.value * config.healthFactor, $('#'+currentPlayer.htmlId + ' figure').siblings('.healthbar').find('.visible-bar'),currentGame,damageDealer);
     };
 
 
