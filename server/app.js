@@ -8,8 +8,9 @@ const Game = require("./classes.js").Game;
 const Ammo = require("./classes.js").Ammo;
 
 app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use('/game/:gameId/', (req,res,next)=>{
+app.use('/game/:gameId', (req,res,next)=>{
 	req.game = Game.find(req.params.gameId);
 	if ( !req.game ) {
 		res.send({error:"Failed to find game"});
@@ -48,14 +49,14 @@ app.use(function (req, res, next) {
 	next();
 });
 
-app.get('/game/', showGames);
+app.get('/game', showGames);
 app.get('/game/:gameId', showGameState);
 app.get('/game/:gameId/player/:playerId', showPlayerState);
 app.get('/game/:gameId/player/:playerId/ammo', fetchAmmo);
 app.post('/game/:gameId/start', startGame);
 app.post('/game/:gameId/stop', stopGame);
 
-app.post('/game/:gameId/player/', identifyPlayer);
+app.post('/game/:gameId/player', identifyPlayer);
 app.post('/game/:gameId/player/:playerId/ammo', fire);
 app.post('/game/:gameId/player/:playerId/hit', reportHit);
 
@@ -99,6 +100,7 @@ function fetchAmmo(req,res) {
 }
 
 function identifyPlayer(req,res){
+	console.log(req.body);
 	res.json({
 		action:"identifyPlayer",
 		result:req.game.getNextAvailablePlayer(req.body && req.body.name)
