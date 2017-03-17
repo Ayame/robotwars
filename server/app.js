@@ -10,6 +10,26 @@ const Ammo = require("./classes.js").Ammo;
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// Add headers
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
+
 app.use('/game/:gameId', (req,res,next)=>{
 	req.game = Game.find(req.params.gameId);
 	if ( !req.game ) {
@@ -29,25 +49,6 @@ app.use('/game/:gameId/player/:playerId', (req,res,next)=>{
 	}
 });
 
-// Add headers
-app.use(function (req, res, next) {
-
-	// Website you wish to allow to connect
-	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8888');
-
-	// Request methods you wish to allow
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-	// Request headers you wish to allow
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-	// Set to true if you need the website to include cookies in the requests sent
-	// to the API (e.g. in case you use sessions)
-	res.setHeader('Access-Control-Allow-Credentials', true);
-
-	// Pass to next layer of middleware
-	next();
-});
 
 app.get('/game', showGames);
 app.get('/game/:gameId', showGameState);
@@ -65,7 +66,7 @@ app.delete('/game/:gameId', stopGame);
 Game.initGames(2);
 
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+  console.log('App listening on port 3000!');
 });
 
 function showGames(req,res){
@@ -92,7 +93,7 @@ function showPlayerState(req,res){
 
 function fetchAmmo(req,res) {
     req.player.fetchAmmo();
-
+    console.log(req.player.name,"->",req.player.ammo.hit);
     res.json({
 		action:"fetchAmmo",
 		result:(req.player.ammo.hit === 0 ? "NOK" : "OK")
@@ -117,10 +118,18 @@ function fire(req,res){
 
 function reportHit(req, res){
 	var adv = req.game.getAdversary(req.player);
-	res.json({
-		action:"reportHit",
-		result: adv.hit(req.player)
-	});
+	if (adv) {
+        res.json({
+            action:"reportHit",
+            result: adv.hit(req.player)
+        });
+	} else {
+        res.json({
+            action:"reportHit",
+            error: "no adversary found"
+        });
+	}
+
 }
 
 function stopGame(req, res){

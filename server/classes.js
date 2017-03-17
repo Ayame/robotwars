@@ -61,14 +61,14 @@ Game.prototype.getNextAvailablePlayer = function(name)
 
 Game.prototype.getAdversary = function(homePlayer)
 {
-    return this.players.find(p => p !== homePlayer);
+    return this.players.find(p => p.id !== homePlayer.id);
 };
 
 function Player(name, id) {
     this.name = name;
     this.id = id;
     this.ammo = undefined;
-    this.health = 20; // TO DO
+    this.health = 20;
 }
 
 Player.prototype.log = function(data){
