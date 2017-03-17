@@ -422,12 +422,12 @@ var interfaceModule = (function () {
 
         // I will need to turn these guys into promises, but that's a worry for tomorrow
     var fetchAmmo = function(action){
-        verbose.log('%c --- AMMO --- for ' + currentGame.getPlayerById(action.player).htmlId,'background: #222; color: #bada55');
+       // verbose.log('%c --- AMMO --- for ' + currentGame.getPlayerById(action.player).htmlId,'background: #222; color: #bada55');
         selectItemBox('#'+currentGame.getPlayerById(action.player).htmlId, getRandomBox());
     };
 
     var fire = function(action){
-        verbose.log('%c --- FIRE --- for ' + currentGame.getPlayerById(action.player).htmlId + ' with ' + action.value.hit + ' damage','background: #F00; color: #FFF');
+      //  verbose.log('%c --- FIRE --- for ' + currentGame.getPlayerById(action.player).htmlId + ' with ' + action.value.hit + ' damage','background: #F00; color: #FFF');
         fireItem(action);
         unselectItemBox(action);
     };
@@ -435,7 +435,7 @@ var interfaceModule = (function () {
     var takeHit = function(action){
         var currentPlayer = currentGame.getPlayerById(action.player);
         var damageDealer = (currentPlayer.htmlId === 'player1')?1:0; // Ok this is really bad, but ideally the server would send who dealt the damage I am now passing the index in the array
-        verbose.log('%c --- HIT --- for ' + currentPlayer.htmlId + ' with ' + action.value + ' damage','background: #0FF; color: #FFF');
+      //  verbose.log('%c --- HIT --- for ' + currentPlayer.htmlId + ' with ' + action.value + ' damage','background: #0FF; color: #FFF');
         currentPlayer.animateHealth(action.value * config.healthFactor, $('#'+currentPlayer.htmlId + ' figure').siblings('.healthbar').find('.visible-bar'),currentGame,damageDealer);
     };
 
