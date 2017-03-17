@@ -314,7 +314,7 @@ var interfaceModule = (function () {
 
                             actions.forEach(function(action,actionIndex){
 
-                                verbose.log('--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name);
+                              //  verbose.log('--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name);
 
                                 // Now do something with them
                                 interfaceModule[action.action](action);
