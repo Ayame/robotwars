@@ -26,7 +26,7 @@ var config = {
     gameId: 0,
 
     // Webservice url
-    serverUrl: 'http://localhost:3000',
+    serverUrl: 'http://172.31.31.40:3000',
 
     // Show console messages
     verbose: true,
@@ -81,7 +81,7 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
     });
 
     // TEMP OVERRIDE
-    //criticalWidth = -1;
+    criticalWidth = -1;
 
     if (criticalWidth < config.criticalHealth) {
 
