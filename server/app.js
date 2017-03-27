@@ -1,5 +1,8 @@
 "use strict";
+const http = require('http');
 const express = require('express');
+const io = require('socket.io');
+
 const bodyParser = require('body-parser');
 const app = express();
 
@@ -63,10 +66,6 @@ app.post('/game/:gameId/player/:playerId/hit', reportHit);
 app.delete('/game/:gameId', stopGame);
 
 Game.initGames(2);
-
-app.listen(3000, function () {
-  console.log('App listening on port 3000!');
-});
 
 function showGames(req,res){
 	res.json(Game.games);
@@ -138,5 +137,9 @@ function stopGame(req, res){
 
 /*******************************************************************/
 
+var server = http.createServer(app);
+server.listen(3000, function () {
+    console.log('App listening on port 3000!');
+});
 
 

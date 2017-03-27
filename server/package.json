@@ -9,7 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.17.1",
     "express": "^4.14.1",
+    "socket.io": "^1.7.3",
     "uuid": "^3.0.1"
   }
 }
