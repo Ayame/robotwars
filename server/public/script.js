@@ -31,19 +31,20 @@ function registerHit(gameId,playerId){
 
 $(()=>{
 	console.log("loaded");
+    $log = $("#log");
 	$("#actions").submit(function(evt){
 	    evt.preventDefault();
 		var game = $("#game").val();
         var player = $("#player").val();
         var action = $("#action").val();
-        $("#log").prepend("<li>"+["submit",game,player,action].join(" ")+"</li>");
+        $log.prepend("<li>"+["submit",game,player,action].join(" ")+"</li>");
 
         switch (action) {
             case "registerplayer": registerPlayer(game); break;
             case "requestammo"   : requestAmmo(game,player); break;
             case "fire"          : fire(game,player); break;
             case "registerhit"   : registerHit(game,player); break;
-            default: $("#log").append("<li>ukn command</li>");
+            default: $log.append("<li>ukn command</li>");
         }
 
 

@@ -8,7 +8,6 @@ const app = express();
 
 
 const Game = require("./classes.js").Game;
-const Ammo = require("./classes.js").Ammo;
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -67,7 +66,9 @@ app.delete('/game/:gameId', stopGame);
 
 Game.initGames(2);
 
+//noinspection JSUnusedLocalSymbols
 function showGames(req,res){
+
 	res.json(Game.games);
 }
 
@@ -84,6 +85,7 @@ function stopGame(req,res){
     req.game.ended = req.body.winner || true;
     res.json(req.game);
 }
+
 
 function showPlayerState(req,res){
 	res.json(req.player);
@@ -130,9 +132,7 @@ function reportHit(req, res){
 
 }
 
-function stopGame(req, res){
-	res.send("stopGame:"+JSON.stringify(req.game));
-}
+
 
 
 /*******************************************************************/

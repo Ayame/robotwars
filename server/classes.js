@@ -12,7 +12,7 @@ function Game() {
 Game.prototype.log = function(data){
     data.timestamp = new Date().getTime();
     this.logs.push(data);
-}
+};
 
 Game.initGames = function(gameCount)
 {
@@ -31,7 +31,7 @@ Game.find = function(id){
 Game.player2game = {};
 Game.getGame4player = function(p){
     return Game.player2game[p];
-}
+};
 
 Game.prototype.createPlayer = function(name){
     let p = new Player(name, uuidV4());
@@ -76,7 +76,7 @@ Player.prototype.log = function(data){
     var game =  Game.getGame4player(this);
     console.log("game for ", this.name, game);
     game.log(data);
-}
+};
 
 Player.prototype.fetchAmmo = function() {
     if (!this.ammo) {
@@ -86,7 +86,7 @@ Player.prototype.fetchAmmo = function() {
             value  : this.ammo
         });
     }
-}
+};
 
 Player.prototype.takeHit = function(ammo)
 {
@@ -122,7 +122,7 @@ Player.prototype.fire = function(){
             value  : this.shotAmmo
         });
     }
-}
+};
 
 function Ammo(hit) {
     this.hit = hit;
