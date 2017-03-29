@@ -6,6 +6,8 @@ const io = require('socket.io');
 const bodyParser = require('body-parser');
 const app = express();
 
+var server = http.createServer(app);
+var serverSocket = io(server);
 
 const Game = require("./classes.js").Game;
 
@@ -68,7 +70,6 @@ Game.initGames(2);
 
 //noinspection JSUnusedLocalSymbols
 function showGames(req,res){
-
 	res.json(Game.games);
 }
 
@@ -133,11 +134,48 @@ function reportHit(req, res){
 }
 
 
+function gameId2roomName(id){
+    return "game-"+id;
+}
 
+var SocketMessages = {
+    listenToGame : "listenToGame",
+    gameLog : "gameLog",
+    serverMsg : "serverMsg"
+};
+
+serverSocket.on("connection", handleNewSocket);
+
+function handleNewSocket( socket ) {
+    var games = [];
+
+    socket.on(SocketMessages.listenToGame, function(gameId) {
+        var game = Game.find(gameId);
+        if ( game ) {
+            if ( games.indexOf(game)<0 ) {
+                games.push(game);
+                if (!game.observer) {
+                    game.observer = function(data){
+                        let roomName =  gameId2roomName( game.getId() );
+                        console.log("sending to "+roomName);
+                        serverSocket.to( roomName ).emit(SocketMessages.gameLog, data);
+                    };
+                    console.log("observer installed: "+game.observer);
+                }
+                socket.join( gameId2roomName(gameId) );
+                socket.emit(SocketMessages.serverMsg, "listening to game " + gameId);
+            } else {
+                socket.emit(SocketMessages.serverMsg, "ERROR: Already listening to game " + gameId);
+            }
+        } else {
+            socket.emit(SocketMessages.serverMsg, "ERROR: Failed to listen to game " + gameId);
+        }
+    } );
+}
 
 /*******************************************************************/
 
-var server = http.createServer(app);
+
 server.listen(3000, function () {
     console.log('App listening on port 3000!');
 });

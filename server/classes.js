@@ -7,11 +7,17 @@ function Game() {
     this.ended = false;
     this.players = [];
     this.logs = [];
+    this.observer = false;
 }
+
+Game.prototype.getId = function() {
+    return Game.games.indexOf(this);
+};
 
 Game.prototype.log = function(data){
     data.timestamp = new Date().getTime();
     this.logs.push(data);
+    if (this.observer) this.observer(data);
 };
 
 Game.initGames = function(gameCount)
@@ -37,6 +43,12 @@ Game.prototype.createPlayer = function(name){
     let p = new Player(name, uuidV4());
     Game.player2game[p] = this;
     this.players.push(p);
+
+    this.log({
+        action:"identifyPlayer",
+        result:p
+    });
+
     return p;
 };
 
