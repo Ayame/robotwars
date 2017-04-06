@@ -154,16 +154,19 @@ function handleNewSocket( socket ) {
         if ( game ) {
             if ( games.indexOf(game)<0 ) {
                 games.push(game);
-                if (!game.observer) {
-                    game.observer = function(data){
-                        let roomName =  gameId2roomName( game.getId() );
-                        console.log("sending to "+roomName);
-                        serverSocket.to( roomName ).emit(SocketMessages.gameLog, data);
-                    };
-                    console.log("observer installed: "+game.observer);
-                }
+
+                let newObserver = function(data){
+                    let roomName =  gameId2roomName( game.getId() );
+                    console.log("sending to " + roomName);
+                    serverSocket.to( roomName ).emit(SocketMessages.gameLog, data);
+                };
+
+                game.addObserver( newObserver );
+
+
                 socket.join( gameId2roomName(gameId) );
                 socket.emit(SocketMessages.serverMsg, "listening to game " + gameId);
+
             } else {
                 socket.emit(SocketMessages.serverMsg, "ERROR: Already listening to game " + gameId);
             }

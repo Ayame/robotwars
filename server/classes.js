@@ -7,8 +7,13 @@ function Game() {
     this.ended = false;
     this.players = [];
     this.logs = [];
-    this.observer = false;
+    this.observers = [];
 }
+
+Game.prototype.addObserver = function( observer ) {
+    this.observers.push( observer );
+}
+
 
 Game.prototype.getId = function() {
     return Game.games.indexOf(this);
@@ -17,7 +22,7 @@ Game.prototype.getId = function() {
 Game.prototype.log = function(data){
     data.timestamp = new Date().getTime();
     this.logs.push(data);
-    if (this.observer) this.observer(data);
+    this.observers.forEach(observer => observer(data));
 };
 
 Game.initGames = function(gameCount)
