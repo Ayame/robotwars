@@ -11,7 +11,7 @@ var serverSocket = io(server);
 
 const Game = require("./classes.js").Game;
 
-app.use(express.static("public"));
+app.use(express.static("../client"));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Add headers

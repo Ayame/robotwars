@@ -26,7 +26,7 @@ var config = {
     gameId: 0,
 
     // Webservice url
-    serverUrl: 'http://172.31.31.40:3000',
+    serverUrl: 'http://localhost:3000',
 
     // Show console messages
     verbose: true,
