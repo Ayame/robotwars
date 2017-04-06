@@ -60,42 +60,14 @@ var GUI = {
 
 var interfaceModule = (function () {
 
-    var currentGame;
+    var currentGame = new Game(false,false);
+
     var lastProcessedTimestamp= 0;
     var firstActionsLoad = true;
 
     var init = function () {
-        setTimeout(function() { GUI.showIntroAndFaceToWaitingScreen(getCurrentGame) },
+        setTimeout(function() { GUI.showIntroAndFaceToWaitingScreen( pollForChanges ) },
             1500); // Stick to 1500ms to allow for initial animation to finish
-    };
-
-    var getCurrentGame = function () {
-        // IIFE to ensure scoping for poll() remains secure
-        (function poll() {
-            setTimeout(function () {
-                $.ajax({
-                    url: config.serverUrl + '/game/' + config.gameId,
-                    method: 'GET',
-                    dataType: 'json'
-                }).done(function (response) {
-
-                    if (typeof currentGame === 'undefined') {
-                        currentGame = new Game(response.started, response.ended);
-                        verbose.log('--- INFO --- Created a new game')
-                    }
-
-                    // Check for players
-                    response.players.forEach(checkPlayerLogin(currentGame));
-
-                    // Stop polling
-                    (response.players.length === 2) ?
-                            verbose.log('--- INFO --- Stopped polling for players') :
-                            poll();
-
-                });
-
-            }, 2000);
-        })();
     };
 
     var checkPlayerLogin = function(currentGame){
@@ -108,10 +80,7 @@ var interfaceModule = (function () {
 
             ) {
                 // Add if not and consider it the first player
-                currentGame.players.push(new Player(player.id,
-                                                    player.name,
-                                                    player.health * config.healthFactor,
-                                                    'player'+(currentGame.players.length + 1) ));
+
 
                 verbose.log('--- INFO --- player processed',player.name);
 
@@ -152,7 +121,6 @@ var interfaceModule = (function () {
             generateBoxes();
 
             showCountDown();
-            pollForChanges();
         });
 
         // Yeah yeah can be optimised for more players but not now
@@ -164,7 +132,7 @@ var interfaceModule = (function () {
     };
 
     var pollActions = (function(){
-        var lastProcessedTimestamp = 0;
+        var processedActions = 0;
 
 
         return function(cb){
@@ -175,8 +143,11 @@ var interfaceModule = (function () {
                 dataType: 'json'
             }).done(function (response) {
                 var actions = response.logs;
-                var res = actions.filter(a=>a.timestamp>lastProcessedTimestamp);
-                lastProcessedTimestamp = actions.reduce((a,b)=>(a>b?a:b), lastProcessedTimestamp);
+                var res = [];
+                for(let i=processedActions; i<actions.length ; i++){
+                    res.push(actions[i]);
+                }
+                processedActions = actions.length;
                 cb(res);
             });
         };
@@ -328,9 +299,32 @@ var interfaceModule = (function () {
         currentPlayer.animateHealth(action.value * config.healthFactor, $('#'+currentPlayer.htmlId + ' figure').siblings('.healthbar').find('.visible-bar'),currentGame,damageDealer);
     };
 
+    var identifyPlayer = function(action){
+        verbose.log('--- INFO --- identifyPlayer ');
+        var player = action.result;
+        currentGame.players.push(new Player(player.id,
+            player.name,
+            player.health * config.healthFactor,
+            'player'+(currentGame.players.length + 1) ));
+        verbose.log('--- INFO --- identifyPlayer : player created ');
 
+        // Check how many players there are now
+        if(currentGame.players.length === 1){
+            $('#player1 .ready').css('display', 'inline-block');
+            $('#player2 .hurry').show();
+        } else {
+            // The second player has been added, move to the next screen
+            $('#player2 .hurry').hide();
+            $('#player2 .ready').css('display', 'inline-block');
+
+            // Start animation new screen
+            initRound();
+        }
+
+    };
 
     return {
+        identifyPlayer: identifyPlayer,
         init: init,
         fetchAmmo: fetchAmmo,
         fire: fire,
