@@ -1,5 +1,5 @@
 function makeUrl(gameId,playerId){
-    if (playerId)
+    if (playerId!==undefined)
         return "http://localhost:3000/game/"+gameId+"/player/"+playerId;
     else
         return "http://localhost:3000/game/"+gameId;
@@ -29,9 +29,34 @@ function registerHit(gameId,playerId){
     $.post( makeUrl(gameId,playerId)+"/hit", success).fail(fail);
 }
 
+function play(game) {
+    doTimedOut( [
+        ()=>registerPlayer(game),
+        ()=>registerPlayer(game),
+        ()=>requestAmmo(game,0),
+        ()=>fire(game,0),
+        ()=>registerHit(game,1),
+        ()=>1,
+        ()=>requestAmmo(game,0),
+        ()=>fire(game,0),
+        ()=>registerHit(game,1)
+    ]);
+}
+
+function doTimedOut(actions){
+    if (actions.length <= 0) return;
+    setTimeout(function() {
+        actions.shift()();
+        doTimedOut(actions);
+    }, 2000);
+}
+
 $(()=>{
 	console.log("loaded");
     $log = $("#log");
+
+    play(0);
+
 	$("#actions").submit(function(evt){
 	    evt.preventDefault();
 		var game = $("#game").val();

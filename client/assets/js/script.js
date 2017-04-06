@@ -41,7 +41,6 @@ var GUI = {
 
     // Show intro for a second -> fade to waiting screen (CSS animation triggered)
     showIntroAndFaceToWaitingScreen : function (done) {
-
         $('#splashscreen').addClass('animated').addClass('slideOutUp').on('animationend', function () {
 
             $('#splashscreen').css({'display': 'none'}); // because the animation library does not reset this property
@@ -66,7 +65,7 @@ var interfaceModule = (function () {
     var firstActionsLoad = true;
 
     var init = function () {
-        setTimeout(GUI.showIntroAndFaceToWaitingScreen(getCurrentGame),
+        setTimeout(function() { GUI.showIntroAndFaceToWaitingScreen(getCurrentGame) },
             1500); // Stick to 1500ms to allow for initial animation to finish
     };
 
@@ -188,10 +187,17 @@ var interfaceModule = (function () {
 
                             actions.forEach(function(action,actionIndex){
 
-                              //  verbose.log('--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name);
+                                if (action.player && currentGame.getPlayerById(action.player)){
+                                    verbose.log('--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name);
+
+                                } else {
+                                    verbose.log('--- INFO --- Handling action ' + action.action + ' (no player)');
+                                }
 
                                 // Now do something with them
-                                interfaceModule[action.action](action);
+                                var interfaceModuleActionHandler = interfaceModule[action.action]
+                                if (interfaceModuleActionHandler) interfaceModuleActionHandler(action);
+                                else verbose.log('--- INFO --- No interfaceModuleActionHandler for ' + action.action);
 
                                 lastProcessedTimestamp = action.timestamp;
 
