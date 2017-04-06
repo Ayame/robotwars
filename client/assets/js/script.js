@@ -52,9 +52,6 @@ var GUI = {
             $('#vs .messages').html('<p class="waiting waitingpulse animated pulse">Waiting for players</p>');
 
             done();
-            // Get game from server with all its info
-            getCurrentGame();
-
         });
 
     }
