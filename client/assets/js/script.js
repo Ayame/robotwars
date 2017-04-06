@@ -37,6 +37,30 @@ var config = {
 
 };
 
+var GUI = {
+
+    // Show intro for a second -> fade to waiting screen (CSS animation triggered)
+    showIntroAndFaceToWaitingScreen : function (done) {
+
+        $('#splashscreen').addClass('animated').addClass('slideOutUp').on('animationend', function () {
+
+            $('#splashscreen').css({'display': 'none'}); // because the animation library does not reset this property
+
+            $('#container').css('display', 'block').addClass('animated').addClass('slideInUp');
+
+            // Add message waiting for players
+            $('#vs .messages').html('<p class="waiting waitingpulse animated pulse">Waiting for players</p>');
+
+            done();
+            // Get game from server with all its info
+            getCurrentGame();
+
+        });
+
+    }
+
+};
+
 
 var interfaceModule = (function () {
 
@@ -45,27 +69,8 @@ var interfaceModule = (function () {
     var firstActionsLoad = true;
 
     var init = function () {
-
-        // Show intro for a second -> fade to waiting screen (CSS animation triggered)
-
-        setTimeout(function () {
-
-            $('#splashscreen').addClass('animated').addClass('slideOutUp').on('animationend', function () {
-
-                $('#splashscreen').css({'display': 'none'}); // because the animation library does not reset this property
-
-                $('#container').css('display', 'block').addClass('animated').addClass('slideInUp');
-
-                // Add message waiting for players
-                $('#vs .messages').html('<p class="waiting waitingpulse animated pulse">Waiting for players</p>');
-
-                // Get game from server with all its info
-                getCurrentGame();
-
-            });
-
-        }, 1500); // Stick to 1500ms to allow for initial animation to finish
-
+        setTimeout(GUI.showIntroAndFaceToWaitingScreen(getCurrentGame),
+            1500); // Stick to 1500ms to allow for initial animation to finish
     };
 
     var getCurrentGame = function () {
