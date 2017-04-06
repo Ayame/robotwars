@@ -163,55 +163,64 @@ var interfaceModule = (function () {
 
     };
 
+    var pollActions = (function(){
+        var lastProcessedTimestamp = 0;
+
+
+        return function(cb){
+            verbose.log('--- INFO --- pollActions ');
+            $.ajax({
+                url: config.serverUrl + '/game/' + config.gameId,
+                method: 'GET',
+                dataType: 'json'
+            }).done(function (response) {
+                var actions = response.logs;
+                var res = actions.filter(a=>a.timestamp>lastProcessedTimestamp);
+                lastProcessedTimestamp = actions.reduce((a,b)=>(a>b?a:b), lastProcessedTimestamp);
+                cb(res);
+            });
+        };
+    })();
+
     var pollForChanges = function(){
         // IIFE for scope
         (function pollRound() {
+            verbose.log('--- INFO --- pollRound ');
+
+            function doAction(action,actionIndex,actions){
+
+                if (action.player && currentGame.getPlayerById(action.player)){
+                    verbose.log('--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name);
+
+                } else {
+                    verbose.log('--- INFO --- Handling action ' + action.action + ' (no player)');
+                }
+
+                // Now do something with them
+                var interfaceModuleActionHandler = interfaceModule[action.action]
+                if (interfaceModuleActionHandler) interfaceModuleActionHandler(action);
+                else verbose.log('--- INFO --- No interfaceModuleActionHandler for ' + action.action);
+
+                lastProcessedTimestamp = action.timestamp;
+
+                // continue polling when last item has finished - put in the loop to ensure all other items have been processed
+                // MDW @ Jill: is this needed? (forEach() executes the provided callback once for each element present in the array in ascending order.)
+                if(actionIndex === actions.length -1){
+                    console.log('--- INFO --- Final element in queue, repolling for new events');
+                    pollRound();
+                }
+            }
+
             setTimeout(function () {
-                $.ajax({
-                    url: config.serverUrl + '/game/' + config.gameId,
-                    method: 'GET',
-                    dataType: 'json'
-                }).done(function (response) {
-                        var actions = response.logs;
-                        // Find last action ID:
-                        var index = actions.findIndex(function(action){return action.timestamp === lastProcessedTimestamp});
-
-
-                        // Do not splice when nothing was found or when it's the last processed item. Need to limit it like this due to splice's circular nature
-                        //if( ((index> -1) && (index < actions.length -1)) || (firstActionsLoad)){
-                        if( (firstActionsLoad && actions.length>0) || (index !== actions.length - 1 && firstActionsLoad === false) ){
-                            index = (firstActionsLoad)?0:index+1;
-                            firstActionsLoad = false;
-
-                            actions = actions.splice(index);
-
-                            actions.forEach(function(action,actionIndex){
-
-                                if (action.player && currentGame.getPlayerById(action.player)){
-                                    verbose.log('--- INFO --- Handling action ' + action.action + ' by player ' + currentGame.getPlayerById(action.player).name);
-
-                                } else {
-                                    verbose.log('--- INFO --- Handling action ' + action.action + ' (no player)');
-                                }
-
-                                // Now do something with them
-                                var interfaceModuleActionHandler = interfaceModule[action.action]
-                                if (interfaceModuleActionHandler) interfaceModuleActionHandler(action);
-                                else verbose.log('--- INFO --- No interfaceModuleActionHandler for ' + action.action);
-
-                                lastProcessedTimestamp = action.timestamp;
-
-                                // continue polling when last item has finished - put in the loop to ensure all other items have been processed
-                                if(actionIndex === actions.length -1){
-                                    console.log('--- INFO --- Final element in queue, repolling for new events');
-                                    pollRound();
-                                }
-                            });
-                        } else { // TODO: figure out why it calls it twice... 
-                            verbose.log('--- INFO --- Nothing new, repolling for new events');
-                            pollRound();
-                        }
-                });
+                pollActions( function(actions){
+                    verbose.log('--- INFO --- pollActions: received : ' + actions.length);
+                    if (actions.length<=0){
+                        verbose.log('--- INFO --- Nothing new, repolling for new events');
+                        pollRound();
+                    } else {
+                        actions.forEach(doAction);
+                    }
+                } );
 
             }, 2000);
         })();
