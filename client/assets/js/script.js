@@ -70,40 +70,6 @@ var interfaceModule = (function () {
             1500); // Stick to 1500ms to allow for initial animation to finish
     };
 
-    var checkPlayerLogin = function(currentGame){
-        return function(player){
-            // Check if in Game.players already
-            if (
-                currentGame.players.find((p) => {
-                    return p.id === player.id
-                }) === undefined
-
-            ) {
-                // Add if not and consider it the first player
-
-
-                verbose.log('--- INFO --- player processed',player.name);
-
-                // Check how many players there are now
-                if(currentGame.players.length === 1){
-                    $('#player1 .ready').css('display', 'inline-block');
-                    $('#player2 .hurry').show();
-                } else {
-                    // The second player has been added, move to the next screen
-                    $('#player2 .hurry').hide();
-                    $('#player2 .ready').css('display', 'inline-block');
-
-                    // Start animation new screen
-                    initRound();
-
-                    // TODO: Can I break a function here so that poll() is not invoked later on? return just breaks me out of the foreach... or do I need to result to a for?
-                    return;
-                }
-
-            }
-        }
-    };
-
     var initRound = function(){
         verbose.log('--- INFO --- Initialising game');
 
