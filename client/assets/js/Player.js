@@ -31,7 +31,7 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
     });
 
     // TEMP OVERRIDE
-    criticalWidth = -1;
+    // criticalWidth = -1;
 
     if (criticalWidth < config.criticalHealth) {
 

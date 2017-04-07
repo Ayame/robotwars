@@ -39,6 +39,10 @@ function play(game) {
         ()=>1,
         ()=>requestAmmo(game,0),
         ()=>fire(game,0),
+        ()=>registerHit(game,1),
+        ()=>1,
+        ()=>requestAmmo(game,0),
+        ()=>fire(game,0),
         ()=>registerHit(game,1)
     ]);
 }

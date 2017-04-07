@@ -144,7 +144,7 @@ function Ammo(hit) {
 }
 
 Ammo.dequeue = function(){
-    return new Ammo(Math.floor(Math.random() * 3));
+    return new Ammo(1+Math.floor(Math.random() * 3));
 };
 
 
