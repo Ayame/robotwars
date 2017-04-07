@@ -1,7 +1,5 @@
 "use strict";
 
-const uuidV4 = require('uuid/v4');
-
 function Game() {
     this.started = false;
     this.ended = false;
@@ -12,7 +10,7 @@ function Game() {
 
 Game.prototype.addObserver = function( observer ) {
     this.observers.push( observer );
-}
+};
 
 
 Game.prototype.getId = function() {
@@ -45,7 +43,7 @@ Game.getGame4player = function(p){
 };
 
 Game.prototype.createPlayer = function(name){
-    let p = new Player(name, uuidV4());
+    let p = new Player(name, this.players.length);
     Game.player2game[p] = this;
     this.players.push(p);
 
