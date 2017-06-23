@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script type="text/javascript" src="assets/js/vendor/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="assets/js/vendor/socket.io.js"></script>
+<script type="text/javascript">
+    var SocketMessages = {
+        listenToGame : "listenToGame",
+        gameLog : "gameLog",
+        serverMsg : "serverMsg"
+    };
+
+
+    var socketIO =  io('http://localhost:3000');
+    //socketIO.connect(); -> dit hoeft eigenlijk niet
+
+    socketIO.emit(SocketMessages.listenToGame,0);
+
+    socketIO.on(SocketMessages.serverMsg,function(msg){
+        console.log('The server said ' + msg);
+
+    });
+    socketIO.on(SocketMessages.gameLog,function(msg){
+        $('body').append('<p>' + JSON.stringify(msg) + '</p>');
+
+    });
+</script>
+
+</body>
+</html>

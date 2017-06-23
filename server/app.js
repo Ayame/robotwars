@@ -57,6 +57,9 @@ app.get('/game', showGames);
 app.get('/game/:gameId', showGameState);
 app.get('/game/:gameId/player/:playerId', showPlayerState);
 app.get('/game/:gameId/player/:playerId/ammo', fetchAmmo);
+/*app.get('/client',function(req,res){
+    res.sendFile(__dirname + '/client/sockettest.html');
+});*/
 app.post('/game/:gameId/start', startGame);
 app.post('/game/:gameId/stop', stopGame);
 
@@ -146,10 +149,11 @@ var SocketMessages = {
 
 serverSocket.on("connection", handleNewSocket);
 
-function handleNewSocket( socket ) {
+function handleNewSocket(socket) {
     var games = [];
 
     socket.on(SocketMessages.listenToGame, function(gameId) {
+        console.log('--- INCOMING -- ' + SocketMessages.listenToGame + ' for game ' + gameId)
         var game = Game.find(gameId);
         if ( game ) {
             if ( games.indexOf(game)<0 ) {
@@ -171,6 +175,7 @@ function handleNewSocket( socket ) {
             socket.emit(SocketMessages.serverMsg, "ERROR: Failed to listen to game " + gameId);
         }
     } );
+    socket.emit(SocketMessages.serverMsg,'Welcome new droid');
 }
 
 /*******************************************************************/
