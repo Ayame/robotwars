@@ -34,9 +34,18 @@ var helperFunctions = (function () {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    var getRandomBox = function(){
+        var currentGame = interfaceModule.getCurrentGame();
+        var randomIndex = getRandomInt(0,currentGame.boxes.length -1);
+        var randomBox = currentGame.boxes[randomIndex];
+        if(!randomBox.visible){getRandomBox();}
+
+        return randomBox.$htmlelement;
+    };
+
     return {
         getTimeRemaining: getTimeRemaining,
-        getRandomInt: getRandomInt
+        getRandomBox: getRandomBox
 
     };
 })();

@@ -63,17 +63,16 @@ var interfaceModule = (function () {
                     player.name,
                     player.health * config.healthFactor,
                     'player'+(currentGame.players.length + 1) ));
+
                 verbose.log('%c --- INFO --- player processed ' + player.name ,'background: #07dc11; color: #FFF');
 
                 // Check how many players there are now
                 if(currentGame.players.length === 1){
-                    $('#player1 .ready').css('display', 'inline-block');
-                    $('#player2 .hurry').show();
+                    interfaceAnimatorModule.showPlayerStatus($('#player1 .ready'),true);
                     reject();
                 } else {
                     // The second player has been added, move to the next screen
-                    $('#player2 .hurry').hide();
-                    $('#player2 .ready').css('display', 'inline-block');
+                    interfaceAnimatorModule.showPlayerStatus($('#player2 .ready'),false);
 
                     // Start animation new screen
                     resolve();
@@ -85,28 +84,19 @@ var interfaceModule = (function () {
 
 
     var getCurrentGame = function(){
-        // return a quick deep copy of the object
-        //return JSON.parse(JSON.stringify(currentGame));
-        //return jQuery.extend(true, {}, currentGame);
-        // No deep ocpy but return the reference because it needs to be modified by the interface animation module by design
+        // No deep copy but return the reference because it needs to be modified by the interface animation module by design
         return currentGame;
     };
 
 
-    var getRandomBox = function(){
-        var randomIndex = helperFunctions.getRandomInt(0,currentGame.boxes.length -1);
-        var randomBox = currentGame.boxes[randomIndex];
-        if(!randomBox.visible){getRandomBox();}
 
-        return randomBox.$htmlelement;
-    };
 
     /********  SPECIAL ACTION FUNCTIONS **********/
 
         // I will need to turn these guys into promises, but that's a worry for tomorrow
     var fetchAmmo = function(action){
         verbose.log('%c --- AMMO --- for ' + currentGame.getPlayerById(action.player).name,'background: #222; color: #bada55');
-        interfaceAnimatorModule.selectItemBox('#'+currentGame.getPlayerById(action.player).htmlId, getRandomBox());
+        interfaceAnimatorModule.selectItemBox('#'+currentGame.getPlayerById(action.player).htmlId, helperFunctions.getRandomBox());
     };
 
     var fire = function(action){

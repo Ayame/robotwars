@@ -83,9 +83,6 @@ var interfaceAnimatorModule = (function(){
         }, 760);
     };
 
-
-
-
     var selectItemBox = function (player, selectedBox) {
 
         // Make a new box
@@ -118,12 +115,17 @@ var interfaceAnimatorModule = (function(){
         laserBeamAudio.play();
     };
 
+    var showPlayerStatus = function($showElement,showHurryBox){
+       $showElement.css('display', 'inline-block');
+       (showHurryBox) ? $('#player2 .hurry').show() : $('#player2 .hurry').hide() ;
+    };
 
     return {
         initRound: initRound,
         selectItemBox: selectItemBox,
         unselectItemBox: unselectItemBox,
         fireItem: fireItem,
-        animateSplashScreen: animateSplashScreen
+        animateSplashScreen: animateSplashScreen,
+        showPlayerStatus: showPlayerStatus
     }
 })();
