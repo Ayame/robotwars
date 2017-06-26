@@ -18,7 +18,7 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
     currentGame.players[playerIndex].health -= decrease; // health x/20, not percentage
     this.fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), currentGame.players[playerIndex].health);
 
-    //verbose.log('%c --- NEW HEALTH --- for ' + currentGame.players[playerIndex].name + ' is ' + currentGame.players[playerIndex].health,'background: #47cbf6; color: #FFF');
+    verbose.log('%c --- NEW HEALTH --- for ' + currentGame.players[playerIndex].name + ' is ' + currentGame.players[playerIndex].health,'background: #47cbf6; color: #FFF');
 
     var newWidth = $target.width() - decrease;
     $target.animate({width: newWidth}, 150, 'linear');
@@ -35,7 +35,7 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
     });
 
     // TEMP OVERRIDE
-    criticalWidth = -1;
+   // criticalWidth = -1;
 
     if (criticalWidth < config.criticalHealth) {
 

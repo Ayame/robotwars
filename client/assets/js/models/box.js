@@ -38,7 +38,7 @@ Box.prototype.moveToStartPosition = function () {
     // this.$htmlelement.css('right','-95px').removeClass('animateImg').addClass('animateImg'); // This makes them turn around and go back, really cool and unexpected!
     this.$htmlelement.removeClass('animateImg');
     void this.$htmlelement[0].offsetWidth; // Some magic I found on https://css-tricks.com/restart-css-animation/
-    this.$htmlelement.addClass('animateImg'); console.log('animation ended with position ' + this.$htmlelement.css('right'))
+    this.$htmlelement.addClass('animateImg'); //console.log('animation ended with position ' + this.$htmlelement.css('right'))
     return this;
 };
 
