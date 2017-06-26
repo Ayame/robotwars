@@ -22,6 +22,7 @@ var config = {
 
     // Standard 10 mins of battle time
     battleDuration: new Date(Date.parse(new Date()) + 10 * 60 * 1000),
+    //battleDuration: new Date(Date.parse(new Date()) +  9000),
 
     // Default first game ID
     gameId: 0,
@@ -39,7 +40,8 @@ var config = {
     socketMessages : {
         listenToGame : "listenToGame",
         gameLog : "gameLog",
-        serverMsg : "serverMsg"
+        serverMsg : "serverMsg",
+        gameOver: "gameOver"
     }
 
 };

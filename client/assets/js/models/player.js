@@ -12,6 +12,9 @@ function Player(id, name, health,htmlId) {
 
 Player.prototype.animateHealth = function (decrease, $target,currentGame,damageDealer) {
 
+    // TEMP OVERRIDE
+    decrease *= 5;
+
     var $parent = $target.closest('.healthbar').parent();
     var playerIndex = parseInt($parent.attr('id').replace('player','')) - 1;
     //currentGame.players[playerIndex].health -= decrease / (config.droidHealth * 10) * 100;
@@ -36,8 +39,8 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
 
     // TEMP OVERRIDE
    // criticalWidth = -1;
-
-    if (criticalWidth < config.criticalHealth) {
+    currentGame.players[playerIndex].health =-1;
+    if (currentGame.players[playerIndex].health < config.criticalHealth) {
 
         $parent.children('.critical').css('visibility', 'visible');
         criticalHealthAudio.play();
@@ -45,7 +48,7 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
         //verbose.log('%c --- CRITICAL CONDITION --- for ' + $parent.attr('id'),'background: #f97100; color: #FFF');
 
     }
-    if (criticalWidth < 0) {
+    if (currentGame.players[playerIndex].health  < 0) {
 
         $parent.children('.critical').css('visibility', 'hidden');
         criticalHealthAudio.pause();
@@ -53,23 +56,7 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
 
         this.fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
 
-        // Finish him Animation first -> followed by game over screen
-
-        // Hide unnecessary boxes for focus
-        $('#vs,.itemcollection').addClass('animated').addClass('fadeOut');
-
-        $('.finishhim').css('display','block').addClass('animated').addClass('bounceInUp').on('animationend',function(){
-            $('#' + currentGame.players[damageDealer].htmlId + ' figure').addClass('movetokill').on('transitionend',function(){
-                $('#' + currentGame.players[playerIndex].htmlId + ' figure').addClass('killed').on('transitionend',function(){
-                    tumDumAudio.play();
-                    $('.finishhim,.healthbar').addClass('fadeOut');
-
-                    // Show game over screen here
-                    $('#gameover').css('display','flex').addClass('animate').addClass('slideInDown').find('p').addClass(currentGame.players[damageDealer].htmlId).children('strong').text(currentGame.players[damageDealer].name);
-
-                });
-            });
-        });
+       interfaceAnimatorModule.finishHim(currentGame.players[damageDealer],currentGame.players[playerIndex] )
 
     }
 };

@@ -49,9 +49,17 @@ var interfaceAnimatorModule = (function(){
     };
 
     var showCountDown = function () {
-        setInterval(function () {
+        var battleTimer = setInterval(function () {
             var t = helperFunctions.getTimeRemaining(config.battleDuration);
             $('.timer time').html('0' + t.minutes + ':' + t.seconds);
+
+            // Check if the time hasn't run out
+            if(t.minutes <= 0 && t.seconds <= 0){
+                // time ran out
+                clearInterval(battleTimer);
+                interfaceModule.battleTimeUp();
+            }
+
         }, 1000);
     };
 
@@ -120,12 +128,49 @@ var interfaceAnimatorModule = (function(){
        (showHurryBox) ? $('#player2 .hurry').show() : $('#player2 .hurry').hide() ;
     };
 
+    // Hide unnecessary boxes for focus
+/*    $('#vs,.itemcollection').addClass('animated').addClass('fadeOut');
+
+    $('.finishhim').css('display','block').addClass('animated').addClass('bounceInUp').on('animationend',function(){
+        $('#' + currentGame.players[damageDealer].htmlId + ' figure').addClass('movetokill').on('transitionend',function(){
+            $('#' + currentGame.players[playerIndex].htmlId + ' figure').addClass('killed').on('transitionend',function(){
+                tumDumAudio.play();
+                $('.finishhim,.healthbar').addClass('fadeOut');
+
+                // Show game over screen here
+                $('#gameover').css('display','flex').addClass('animate').addClass('slideInDown').find('p').addClass(currentGame.players[damageDealer].htmlId).children('strong').text(currentGame.players[damageDealer].name);
+
+            });
+        });
+    });*/
+
+    var finishHim = function(winner,loser){
+        // Finish him Animation first -> followed by game over screen
+
+        // Hide unnecessary boxes for focus
+        $('#vs,.itemcollection').addClass('animated').addClass('fadeOut');
+
+        $('.finishhim').css('display','block').addClass('animated').addClass('bounceInUp').on('animationend',function(){
+            $('#' + winner.htmlId + ' figure').addClass('movetokill').on('transitionend',function(){
+                $('#' + loser.htmlId + ' figure').addClass('killed').on('transitionend',function(){
+                    tumDumAudio.play();
+                    $('.finishhim,.healthbar').addClass('fadeOut');
+
+                    // Show game over screen here
+                    $('#gameover').css('display','flex').addClass('animate').addClass('slideInDown').find('p').addClass(winner.htmlId).children('strong').text(winner.name);
+
+                });
+            });
+        });
+    };
+
     return {
         initRound: initRound,
         selectItemBox: selectItemBox,
         unselectItemBox: unselectItemBox,
         fireItem: fireItem,
         animateSplashScreen: animateSplashScreen,
-        showPlayerStatus: showPlayerStatus
+        showPlayerStatus: showPlayerStatus,
+        finishHim: finishHim
     }
 })();

@@ -88,7 +88,23 @@ var interfaceModule = (function () {
         return currentGame;
     };
 
+    var battleTimeUp = function(){
+        // Hardcoded on 2 players for speed purposes in this demo
+        var winner = currentGame.players[0];
+        var loser = currentGame.players[1];
 
+        // Determine winner -> there is no tie
+        if(winner.health < loser){
+            winner = currentGame.players[1];
+            loser = currentGame.players[0];
+        }
+
+        // Show animation
+        interfaceAnimatorModule.finishHim(winner,loser);
+
+        // Send message to server
+        socket.emit(config.socketMessages.listenToGame,config.gameId);
+    };
 
 
     /********  SPECIAL ACTION FUNCTIONS **********/
@@ -119,7 +135,8 @@ var interfaceModule = (function () {
         fire: fire,
         takeHit: takeHit,
         identifyPlayer: identifyPlayer,
-        getCurrentGame: getCurrentGame
+        getCurrentGame: getCurrentGame,
+        battleTimeUp: battleTimeUp
     }
 
 })();

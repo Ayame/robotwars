@@ -144,7 +144,8 @@ function gameId2roomName(id){
 var SocketMessages = {
     listenToGame : "listenToGame",
     gameLog : "gameLog",
-    serverMsg : "serverMsg"
+    serverMsg : "serverMsg",
+    gameOver : "gameOver"
 };
 
 serverSocket.on("connection", handleNewSocket);
@@ -175,6 +176,10 @@ function handleNewSocket(socket) {
             socket.emit(SocketMessages.serverMsg, "ERROR: Failed to listen to game " + gameId);
         }
     } );
+    socket.on(SocketMessages.gameOver, function(gameId) {
+        console.log("game "+gameId + " finished");
+    });
+
     socket.emit(SocketMessages.serverMsg,'Welcome new droid');
 }
 
