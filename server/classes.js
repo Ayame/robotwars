@@ -134,8 +134,14 @@ Player.prototype.hit = function(player)
 	}
 };
 
-Player.prototype.fire = function(){
-    if (this.ammo) {
+Player.prototype.fire = function() {
+    if ( ! Game.getGame4player(this).started ) {
+        console.log("cannot fire ammo: Game not started");
+        return false;
+    } else if ( ! this.ammo ) {
+        console.log("cannot fire ammo:  no ammo");
+        return false;
+    } else {
         this.shotAmmo = this.ammo;
         this.ammo = false;
         this.log({
