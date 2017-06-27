@@ -44,6 +44,8 @@ Game.prototype.createPlayer = function(name){
     Game.player2game[p] = this;
     this.players.push(p);
 
+    if (this.players.length === 2 ) this.started = true;
+
     this.log({
         action:"identifyPlayer",
         result:p
@@ -79,24 +81,31 @@ Game.prototype.getAdversary = function(homePlayer)
 function Player(name, id) {
     this.name = name;
     this.id = id;
-    this.ammo = undefined;
+    this.ammo = false;
     this.health = 20;
 }
 
 Player.prototype.log = function(data){
     data.player = this.id;
     var game =  Game.getGame4player(this);
-    console.log("game for ", this.name, game);
+    //console.log("game for ", this.name, game);
     game.log(data);
 };
 
 Player.prototype.fetchAmmo = function() {
-    if (!this.ammo) {
+    if ( ! Game.getGame4player(this).started ) {
+        console.log("cannot fetch ammo: Game not started");
+        return false;
+    } else if ( this.ammo ) {
+        console.log("cannot fetch ammo:  Already requested");
+        return false;
+    } else {
         this.ammo = Ammo.dequeue();
         this.log({
             action : "fetchAmmo",
             value  : this.ammo
         });
+        return true;
     }
 };
 
@@ -128,7 +137,7 @@ Player.prototype.hit = function(player)
 Player.prototype.fire = function(){
     if (this.ammo) {
         this.shotAmmo = this.ammo;
-        this.ammo = null;
+        this.ammo = false;
         this.log({
             action : "fire",
             value  : this.shotAmmo

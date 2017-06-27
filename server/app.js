@@ -96,11 +96,11 @@ function showPlayerState(req,res){
 }
 
 function fetchAmmo(req,res) {
-    req.player.fetchAmmo();
-    console.log(req.player.name,"->",req.player.ammo.hit);
+    let p = req.player;
+    let success = p.fetchAmmo();
     res.json({
 		action:"fetchAmmo",
-		result:(req.player.ammo.hit === 0 ? "NOK" : "OK")
+		result:((success && p.ammo && p.ammo.hit !== 0) ? "OK" : "NOK")
 	});
 }
 
