@@ -176,8 +176,8 @@ function handleNewSocket(socket) {
             socket.emit(SocketMessages.serverMsg, "ERROR: Failed to listen to game " + gameId);
         }
     } );
-    socket.on(SocketMessages.gameOver, function(gameId) {
-        console.log("game "+gameId + " finished");
+    socket.on(SocketMessages.gameOver, function(game) {
+        console.log("game "+game.game + " finished. " + game.player.name + " won");
     });
 
     socket.emit(SocketMessages.serverMsg,'Welcome new droid');

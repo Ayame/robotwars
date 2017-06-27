@@ -56,8 +56,8 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
 
         this.fillOutHealth($('#' + $parent.attr('id') + ' .healthbar h3 span'), 0);
 
-       interfaceAnimatorModule.finishHim(currentGame.players[damageDealer],currentGame.players[playerIndex] )
-
+       interfaceAnimatorModule.finishHim(currentGame.players[damageDealer],currentGame.players[playerIndex] );
+      interfaceModule.triggerGameOver(config.gameId,currentGame.players[damageDealer]);
     }
 };
 

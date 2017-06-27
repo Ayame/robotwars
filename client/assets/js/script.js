@@ -41,10 +41,11 @@ var interfaceModule = (function () {
         })
     };
 
-     var identifyPlayer = function(gameLog){
-        verbose.log(' --- DUMP --- ',gameLog);
-        var handlePlayerRegistrationPromise = new Promise(handlePlayerRegistration(gameLog.result));
-        handlePlayerRegistrationPromise.then(function(){interfaceAnimatorModule.initRound()}).catch(function(){console.log('Player one waiting for two ...');});
+     var identifyPlayer = function(gameLog){// Send message to server
+
+         verbose.log(' --- DUMP --- ',gameLog);
+         var handlePlayerRegistrationPromise = new Promise(handlePlayerRegistration(gameLog.result));
+         handlePlayerRegistrationPromise.then(function(){interfaceAnimatorModule.initRound()}).catch(function(){console.log('Player one waiting for two ...');});
     };
 
     var handlePlayerRegistration = function(player){
@@ -103,9 +104,13 @@ var interfaceModule = (function () {
         interfaceAnimatorModule.finishHim(winner,loser);
 
         // Send message to server
-        socket.emit(config.socketMessages.listenToGame,config.gameId);
+        triggerGameOver(config.gameId,winner);
     };
 
+    var triggerGameOver = function(gameId, winner) {
+        // Send message to server
+        socket.emit(config.socketMessages.gameOver,{game: gameId, player: winner})
+    };
 
     /********  SPECIAL ACTION FUNCTIONS **********/
 
@@ -136,7 +141,8 @@ var interfaceModule = (function () {
         takeHit: takeHit,
         identifyPlayer: identifyPlayer,
         getCurrentGame: getCurrentGame,
-        battleTimeUp: battleTimeUp
+        battleTimeUp: battleTimeUp,
+        triggerGameOver: triggerGameOver
     }
 
 })();
