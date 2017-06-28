@@ -13,7 +13,7 @@ function Player(id, name, health,htmlId) {
 Player.prototype.animateHealth = function (decrease, $target,currentGame,damageDealer) {
 
     // TEMP OVERRIDE
-    decrease *= 5;
+    //decrease *= 5;
 
     var $parent = $target.closest('.healthbar').parent();
     var playerIndex = parseInt($parent.attr('id').replace('player','')) - 1;
@@ -38,8 +38,8 @@ Player.prototype.animateHealth = function (decrease, $target,currentGame,damageD
     });
 
     // TEMP OVERRIDE
-   // criticalWidth = -1;
-    currentGame.players[playerIndex].health =-1;
+    //currentGame.players[playerIndex].health =-1;
+
     if (currentGame.players[playerIndex].health < config.criticalHealth) {
 
         $parent.children('.critical').css('visibility', 'visible');

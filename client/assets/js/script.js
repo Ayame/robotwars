@@ -20,7 +20,7 @@ var interfaceModule = (function () {
         // Show intro for a second -> fade to waiting screen (CSS animation triggered)
         setTimeout(function () {
             var animateLogo = new Promise(interfaceAnimatorModule.animateSplashScreen);
-            animateLogo.then(loadCurrentGame); // Make get current game promise? Socket promise?
+            animateLogo.then(loadCurrentGame);
         }, 1500); // Stick to 1500ms to allow for initial animation to finish
 
     };
@@ -29,7 +29,7 @@ var interfaceModule = (function () {
         // Get the current game
         socket.emit(config.socketMessages.listenToGame,config.gameId);
 
-        // TODO: dit moet vervangen worden in een gamelog!!!
+        // TODO: needs to be handled by a gamelog event!!!
         currentGame = new Game(false, false);
         listenToGameEvents();
     };

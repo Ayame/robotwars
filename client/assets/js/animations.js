@@ -91,6 +91,7 @@ var interfaceAnimatorModule = (function(){
         }, 760);
     };
 
+    // Requires player object (player selecting the ammo) and select random box from belt
     var selectItemBox = function (player, selectedBox) {
 
         // Make a new box
@@ -115,6 +116,7 @@ var interfaceAnimatorModule = (function(){
         $(player).find('.itemcollection .activeitem').css('visibility', 'hidden')
     };
 
+    // requires socket action object
     var fireItem = function (action) {
         var player = interfaceModule.getCurrentGame().getPlayerById(action.player).htmlId;
 
@@ -128,21 +130,6 @@ var interfaceAnimatorModule = (function(){
        (showHurryBox) ? $('#player2 .hurry').show() : $('#player2 .hurry').hide() ;
     };
 
-    // Hide unnecessary boxes for focus
-/*    $('#vs,.itemcollection').addClass('animated').addClass('fadeOut');
-
-    $('.finishhim').css('display','block').addClass('animated').addClass('bounceInUp').on('animationend',function(){
-        $('#' + currentGame.players[damageDealer].htmlId + ' figure').addClass('movetokill').on('transitionend',function(){
-            $('#' + currentGame.players[playerIndex].htmlId + ' figure').addClass('killed').on('transitionend',function(){
-                tumDumAudio.play();
-                $('.finishhim,.healthbar').addClass('fadeOut');
-
-                // Show game over screen here
-                $('#gameover').css('display','flex').addClass('animate').addClass('slideInDown').find('p').addClass(currentGame.players[damageDealer].htmlId).children('strong').text(currentGame.players[damageDealer].name);
-
-            });
-        });
-    });*/
 
     var finishHim = function(winner,loser){
         // Finish him Animation first -> followed by game over screen
