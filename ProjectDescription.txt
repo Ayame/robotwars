@@ -1,0 +1,65 @@
+Installation Guide Robot Client
+
+- Install Node.JS
+	Packages:
+		- debounce
+		- serialport
+		- node-hid
+		- xbox-controller-node
+		- request
+		- keypress
+
+- Connect laptop to Droid via Bluetooth -> pairing code: 1234
+- Check device name Droid
+	Windows: open Bluetooth settings, more/advanced Bluetooth settings, COM-ports, Name HC-05 outgoing connection get that COM port.
+	Open app via: node app.js COM3 -> this will open the app with COM3, use the correct COM port.
+	
+	MAC users: open terminal, command: ls /dev/tty.*, get the device name HC-05
+	Open app via: node app.js /dev/tty.HC-05 -> this will open the app with the correct Droid.
+
+	
+	
+	
+Project description
+
+The project exists in 4 modules all connected with each other.
+
+Basic description project
+There are 2 Droids in the battle, equipped with a distance sensor, IR transmitters, IR receivers, and Bluetooth for communication. These Droids are able to ‘fire’ with the IR sensor. When you’ve got an input on the IR receiver your Droid is hit.
+Optional, the Droid can read the distance sensor to notice if your enemy is close. With that distance the team will know if the IR ‘fire’ is even possible to make a hit.
+
+Little catch, before you can actually fire the client need to grab a shot from the waiting queue on the server. 
+There shots, with different kind of power, will be random in the queue, with bad luck there is nothing in the queue. These shots need to be grabbed from the client, when the client receives a shot the Droid will get the command to fire.
+When the Droid is hit, the client needs to send a received hit to the server.
+
+The server will show the scores on the GUI and declares a winner after 10 minutes of war. Before the war can start each team needs to pass the test of the Droid, this test includes connection to the server, receiving a hit and connection to the Droid.
+
+Description of the modules.
+
+Module 1: Droid
+The Droid is the Robot Warrior in the battle. Running on a Intel Galileo with Arduino Chipset. On the Droid there are 2 infrared transmittors, 1 receiver, Bluetooth and 2 motors.
+Objects on the Droid:
+	- DC motor & H-Bridge
+	- Bluetooth communication on Droid
+	- Infrared receiving & transmitting
+
+Module 2: ClientDroid
+This is a Node.JS application that handles the connection between the userinput, input from the Droid and the connection to the server module, for example logging in to the server. This client can handle input from an Xbox controller or keyboard.
+Objects on the client:
+	- Transmitting & receiving Bluetooth communication
+	- Communication to the server
+	- Handleing input from the user
+
+Module 3: Server
+This is a Node.JS application that handles the war. Each client needs to connect to the server and every action that the client does needs to be send to this server (except driving around). For example, getting AMMO, fireing AMMO, getting hit, ...
+
+Module 4: Visualisation
+This module is a webapplication that visualizes everything that happens on the server. A player connected, the war has started, every action the user does this module shows it on the screen.
+
+For later purposes:
+
+Module 5: Selling the Droid for investors for extra lives
+This module is created for marketing or consultency. The purpose is a working Droid as prototype but there is investment needed for perfecting the Droid. Research needs to be done on how to set the Droid in the Market as the best solution.
+
+Module 6: buying parts of the solution for lives
+When a team is stuck on a certain object, they can be bought from the creators. Every team starts with a number of lives, each object has a value of x lives.
