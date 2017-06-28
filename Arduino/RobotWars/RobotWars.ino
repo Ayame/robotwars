@@ -1,9 +1,6 @@
-//#include <WString.h>
-//String readRequest;
-
 const byte backInputIR = A1; //IR receiver
 const byte frontInputIR = A0; //IR receiver
-const byte outputIR = 13; //IR transmitter
+const byte irTransmitter = 13; //IR transmitter
 
 const byte EN = 10;  //pin 6 L295N ENABLE A 
 const byte IN1 = 8;  //pin 5 L295N IN1
@@ -12,6 +9,9 @@ const byte IN2 = 12;  //pin 7 L295N IN2
 const byte ENB = 6; //pin 11 L295N ENABLE B
 const byte IN3 = 9; //pin 10 L295N IN3
 const byte IN4 = 7; //pin 12 L295N IN4
+
+unsigned long previousMillis = 0;        
+const long interval = 1000;
 
 void setup()  
 {  
@@ -26,10 +26,10 @@ void setup()
 
   pinMode(frontInputIR, INPUT_PULLUP);
   pinMode(backInputIR, INPUT_PULLUP);
-  pinMode(outputIR, OUTPUT);
+  pinMode(irTransmitter, OUTPUT);
   
   Serial.begin(9600);  //local Serial Monitor
-  Serial1.begin(115200);  //bluetooth Serial Monitor
+  Serial1.begin(9600);  //bluetooth Serial Monitor
 
     //set speed
   analogWrite(EN,255);
@@ -44,134 +44,128 @@ void setup()
 void loop()  
 {  
  /*   Serial.println(digitalRead(frontInputIR));
-  Serial.println(digitalRead(backInputIR));*/
+      Serial.println(digitalRead(backInputIR));*/
    // Keep reading from HC-05 and send to Arduino Serial Monitor  
   if (Serial1.available())
   {
-    char readCommand = Serial1.read();
-   // Serial.println("Finished reading request: " + readCommand);
-    handleCommand(readCommand);
-  }
-}  
-
-void handleCommand(char command)
-{
-  //drive
-  if(command == 'd')
-  {
-    forward();
-  }
-
-  //back
-  if(command == 'b')
-  {
-    backwards();
-  }
-
-  //left
-  if(command == 'l')
-  {
-    left();
-  }
-
-  //right
-  if(command == 'r')
-  {
-    right();
-  }
-
-  //stop
-  if(command == 's')
-  {
-    stopMotor();
-  }
-
-  //fire
-  if(command == 'f')
-  {
-    fireIRSensor();
-  }
-}
-
-
-void forward()
-{
-  //Serial1.println("Going forward!");
-  //forward right
-  digitalWrite(IN1,LOW);
-  digitalWrite(IN2,HIGH);
-  //forward left
-  digitalWrite(IN3,LOW);
-  digitalWrite(IN4,HIGH);
-}
-
-void backwards()
-{
-  //Serial1.println("Going backwards!");
+     char c = Serial1.read();
+        Serial.print(c);
+        switch(c)
+        {
+          case 'b':
+            drive(HIGH);
+          break;
   
-  //back left
-  digitalWrite(IN3,HIGH);
-  digitalWrite(IN4,LOW);
+          case 's':
+            stopMotor();
+          break;
+  
+          case 'd':
+            drive(LOW);
+          break;
 
- //back right
-  digitalWrite(IN1,HIGH);
-  digitalWrite(IN2,LOW);  
+          case 'l':
+            turn(LOW);
+          break;
+
+          case 'r':
+            turn(HIGH);
+          break;
+
+          case 'g':
+            turn(2);
+          break;
+
+          case 'f':
+            fireIRSensor();
+          break;
+        }
+  }
 }
 
-void left()
+void drive(uint8_t directionMotor)
 {
-  //Serial1.println("Going left!");
-
-  //forward left
-  digitalWrite(IN3,HIGH);
-  digitalWrite(IN4,LOW);
-
- //back right
   digitalWrite(IN1,LOW);
-  digitalWrite(IN2,HIGH);  
+  digitalWrite(IN2,LOW);
+  switch(directionMotor)
+  {
+    case 0:
+      digitalWrite(IN1,LOW);
+      digitalWrite(IN2,HIGH);
+
+      digitalWrite(IN3,LOW);
+      digitalWrite(IN4,HIGH);
+      
+    break;
+    
+    case 1:
+      digitalWrite(IN1,HIGH);
+      digitalWrite(IN2,LOW);
+      
+      digitalWrite(IN3,HIGH);
+      digitalWrite(IN4,LOW);
+    break;
+  }
 }
 
-void right()
-{  
-  //Serial1.println("Going right!");
-  //back left
-  digitalWrite(IN3,LOW);
-  digitalWrite(IN4,HIGH);
+void turn(uint8_t directionMotor)
+{    
+  switch(directionMotor)
+  {
+    case 0:
 
- //forward right
-  digitalWrite(IN1,HIGH);
-  digitalWrite(IN2,LOW); 
+      digitalWrite(IN1,LOW);
+      digitalWrite(IN2,HIGH);
+      
+      digitalWrite(IN3,HIGH);
+      digitalWrite(IN4,LOW);
+      
+    break;
+    
+    case 1:
+      digitalWrite(IN1,HIGH);
+      digitalWrite(IN2,LOW);
+      
+      digitalWrite(IN3,LOW);
+      digitalWrite(IN4,HIGH);
+    break;
+
+    default:
+      digitalWrite(IN1,LOW);
+      digitalWrite(IN2,LOW);
+      digitalWrite(IN3,LOW);
+      digitalWrite(IN4,LOW);
+    break;
+  }
 }
+
 
 void stopMotor()
 {
-  //Serial1.println("Stop motors!");
-
   digitalWrite(IN1,LOW);
-  digitalWrite(IN2,LOW);
-
+  digitalWrite(IN2,LOW);  
   digitalWrite(IN3,LOW);
-  digitalWrite(IN4,LOW);
-
+  digitalWrite(IN4,LOW);  
 }
+
 
 void readIRSensor()
 {
- // Serial.println(analogRead(frontInputIR));
- // Serial.println(analogRead(backInputIR));
- 
-  if(analogRead(frontInputIR) < 10 || analogRead(backInputIR) < 10)
+  
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval) 
   {
+    previousMillis = currentMillis;
     Serial1.println("HIT");
   }
-}
+} 
 
 void fireIRSensor()
 {
-  //Serial1.println("FIRE!!");
-
-  digitalWrite(outputIR, HIGH);
-  delay(100);
-  digitalWrite(outputIR, LOW);
-  delay(100);
+  previousMillis = millis();
+  digitalWrite(irTransmitter, HIGH);
+  delay(200);
+  digitalWrite(irTransmitter, LOW);
+  delay(200);
 }
